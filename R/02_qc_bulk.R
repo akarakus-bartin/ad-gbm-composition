@@ -20,7 +20,8 @@ process_gse48350 <- function() {
   raw_dir <- here::here(PARAMS$paths$raw_data, "GSE48350")
 
   # Load CEL files
-  cel_files <- list.files(raw_dir, pattern = "\\.CEL(\\.gz)?$", full.names = TRUE, recursive = TRUE)
+  cel_files <- list.files(raw_dir, pattern = "\\.CEL(\\.gz)?$", 
+                        full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
   assert_that(length(cel_files) > 0, "No CEL files found for GSE48350")
 
   affy_batch <- affy::ReadAffy(filenames = cel_files)
@@ -47,32 +48,87 @@ process_gse48350 <- function() {
   gene_expr <- expr_df[best_probe$PROBEID, ]
   rownames(gene_expr) <- best_probe$SYMBOL
 
-  # Sample metadata: parse from GEO series matrix (TODO: verify structure)
+  # ---- Sample metadata (using pre-parsed GEO columns) ----
   gse <- getGEO(filename = list.files(raw_dir, pattern = "series_matrix", full.names = TRUE)[1])
   pheno <- pData(gse)
 
-  # NOTE: column names below are indicative and MUST be verified against actual pheno
+  # GSE48350 diagnosis derivation:
+  # - The 80 samples with a Braak stage annotation are ALL AD patients (verified from title
+  #   field where diagnosis is embedded as "_AD_"). Braak stage distinguishes disease progression.
+  # - The 140 samples coded "C" in characteristics_ch1 are Caucasian controls (healthy aging).
+  # - The 33 samples coded "AA" are African American controls, aged 30-48 (too young for AD
+  #   analysis; excluded).
+  # See DEVIATIONS.md for rationale.
+  
+  # Ethnicity code from characteristics_ch1 ("individual: N, X" where X in {C, AA})
+  diag_codes <- sapply(strsplit(as.character(pheno$characteristics_ch1), ","), 
+                       function(x) trimws(x[2]))
+  
+  # Derive diagnosis:
+  # - Braak-annotated samples -> AD (all 80 are AD per title verification)
+  # - "C"-coded samples without Braak -> Control
+  # - "AA"-coded samples -> excluded (young controls, age mismatch)
+  diagnosis <- rep(NA_character_, nrow(pheno))
+  has_braak <- !is.na(pheno$`braak stage:ch1`)
+  diagnosis[has_braak] <- "AD"
+  diagnosis[!has_braak & diag_codes == "C"] <- "Control"
+  # AA samples remain NA -> will be excluded
+  
   meta <- data.frame(
     sample_id = rownames(pheno),
-    diagnosis = pheno$`characteristics_ch1`,   # TODO: parse "AD" vs "Control" from this field
-    age = as.numeric(pheno$`characteristics_ch1.1`),  # TODO: parse
-    sex = pheno$`characteristics_ch1.2`,
-    brain_region = pheno$`characteristics_ch1.3`,     # TODO: parse "hippocampus" or "entorhinal cortex"
+    diagnosis = diagnosis,
+    age = as.numeric(pheno$`age (yrs):ch1`),
+    sex = pheno$`gender:ch1`,
+    brain_region = pheno$`brain region:ch1`,
+    braak_stage = pheno$`braak stage:ch1`,
+    apoe = pheno$`apoe genotype:ch1`,
+    mmse = as.numeric(pheno$`mmse:ch1`),
+    ethnicity_code = diag_codes,
     dataset = "GSE48350",
     stringsAsFactors = FALSE
   )
+  
+  log_msg(STAGE, sprintf("Diagnosis assignments: AD=%d, Control=%d, Excluded=%d",
+                         sum(meta$diagnosis == "AD", na.rm = TRUE),
+                         sum(meta$diagnosis == "Control", na.rm = TRUE),
+                         sum(is.na(meta$diagnosis))))
+  
   # Match sample order to expression columns
   meta <- meta[match(colnames(gene_expr), meta$sample_id), ]
-
-  # Apply age filter: >=65
-  keep <- !is.na(meta$age) & meta$age >= 65
+  
+  # ---- Filters ----
+  # 1. Resolvable diagnosis
+  keep_diag <- !is.na(meta$diagnosis)
+  # 2. Age >= 65 (applies to both groups; AD group naturally satisfies; excludes young C samples)
+  keep_age <- !is.na(meta$age) & meta$age >= 65
+  # 3. Brain region: hippocampus OR entorhinal cortex
+  keep_region <- grepl("hippocampus|entorhinal", tolower(meta$brain_region))
+  # 4. For AD samples, restrict to advanced Braak stages (V, V-VI, VI)
+  #    to align with the snRNA-seq analysis (Leng: Braak 0 vs Braak VI)
+  advanced_braak <- meta$braak_stage %in% c("V", "V-VI", "VI")
+  keep_ad_advanced <- ifelse(meta$diagnosis == "AD", advanced_braak, TRUE)
+  
+  keep <- keep_diag & keep_age & keep_region & keep_ad_advanced
+  
+  log_msg(STAGE, sprintf("Filter cascade: total=%d -> diagnosis=%d -> age65+=%d -> region=%d -> advanced Braak=%d",
+                         nrow(meta), sum(keep_diag), 
+                         sum(keep_diag & keep_age),
+                         sum(keep_diag & keep_age & keep_region),
+                         sum(keep)))
+  
   meta <- meta[keep, ]
   gene_expr <- gene_expr[, keep]
-
-  # Restrict to hippocampus and entorhinal cortex
-  region_ok <- grepl("hippocampus|entorhinal", tolower(meta$brain_region))
-  meta <- meta[region_ok, ]
-  gene_expr <- gene_expr[, region_ok]
+  
+  log_msg(STAGE, sprintf("Final GSE48350 cohort composition:"))
+  log_msg(STAGE, sprintf("  Diagnosis: %s", 
+                         paste(names(table(meta$diagnosis)), table(meta$diagnosis), 
+                               sep = "=", collapse = ", ")))
+  log_msg(STAGE, sprintf("  Region: %s",
+                         paste(names(table(meta$brain_region)), table(meta$brain_region),
+                               sep = "=", collapse = ", ")))
+  log_msg(STAGE, sprintf("  Sex: %s",
+                         paste(names(table(meta$sex)), table(meta$sex),
+                               sep = "=", collapse = ", ")))
 
   log_msg(STAGE, sprintf("GSE48350 after QC: %d genes x %d samples", nrow(gene_expr), ncol(gene_expr)))
   list(expr = gene_expr, meta = meta)
@@ -86,7 +142,8 @@ process_gse36980 <- function() {
   log_msg(STAGE, "Processing GSE36980 (HuGene 1.0 ST)")
   raw_dir <- here::here(PARAMS$paths$raw_data, "GSE36980")
 
-  cel_files <- list.files(raw_dir, pattern = "\\.CEL(\\.gz)?$", full.names = TRUE, recursive = TRUE)
+  cel_files <- list.files(raw_dir, pattern = "\\.CEL(\\.gz)?$", 
+                        full.names = TRUE, recursive = TRUE, ignore.case = TRUE)
   assert_that(length(cel_files) > 0, "No CEL files found for GSE36980")
 
   raw_data <- oligo::read.celfiles(cel_files)

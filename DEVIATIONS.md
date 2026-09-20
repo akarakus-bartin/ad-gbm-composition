@@ -1,3 +1,5 @@
+Initial commit hash: 3fcf8d1fa2e4fab5dde875ebe54b8a7ef6a1d7ff 2026-09-20 18:14:57 +0300
+
 # DEVIATIONS from the pre-specified Analysis Plan
 
 This file records any deviation from `docs/Analysis_Plan_v1.docx`.
