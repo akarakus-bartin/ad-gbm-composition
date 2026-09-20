@@ -1,0 +1,34 @@
+# Raw data (too large; downloaded per-user)
+data/raw/
+!data/raw/.gitkeep
+
+# Intermediate results (Zenodo-deposited)
+results/intermediate/
+!results/intermediate/.gitkeep
+
+# Logs (regenerated per run)
+results/logs/
+!results/logs/.gitkeep
+
+# R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# renv
+renv/library/
+renv/local/
+renv/cellar/
+renv/staging/
+renv/python/
+!renv/activate.R
+!renv/settings.json
+
+# System
+.DS_Store
+Thumbs.db
+
+# OS-generated
+*.log
+*.tmp

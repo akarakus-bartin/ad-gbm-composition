@@ -1,0 +1,104 @@
+# ==============================================================================
+# ANALYSIS PARAMETERS
+# All parameters from the pre-specified Analysis Plan are here.
+# Any change to these values is a deviation and must be logged in DEVIATIONS.md.
+# ==============================================================================
+
+# Random seed (used everywhere for reproducibility)
+seed: 20260101
+
+# ----- Data accession -----
+data:
+  leng_geo: "GSE147528"           # AD snRNA-seq (Leng et al. 2021)
+  neftel_geo: "GSE131928"          # GBM scRNA-seq (Neftel et al. 2019)
+  ad_bulk_1_geo: "GSE48350"        # AD microarray, HG-U133 Plus 2.0
+  ad_bulk_2_geo: "GSE36980"        # AD microarray, HuGene 1.0 ST
+  xena_gbm_url: "https://toil.xenahubs.net/download/tcga_gtex_TARGET_gtex_TCGA_GBM.gz"
+  xena_gtex_url: "https://toil.xenahubs.net/download/gtex_RSEM_gene_tpm.gz"
+
+# ----- Bulk QC thresholds -----
+bulk_qc:
+  min_log2_expression: 4           # microarray filter (GSE48350, GSE36980)
+  min_frac_samples: 0.20           # gene retained if expressed above threshold in >=20% samples
+  min_log2_tpm: 1                  # RNA-seq filter (TCGA, GTEx)
+  rin_threshold: 6                 # sample-level QC
+  gtex_hardy_max: 3                # exclude Hardy score >3
+
+# ----- ComBat batch correction acceptance -----
+combat_acceptance:
+  max_pc1_dataset_r: 0.20          # post-correction PC1 vs dataset absolute r
+  min_pc1_or_pc2_diagnosis_r: 0.30 # diagnosis must load on PC1 or PC2
+
+# ----- Single-cell QC (snRNA-seq: Leng) -----
+snrnaseq_qc:
+  min_features: 200
+  min_counts: 400
+  max_pct_mito: 5
+  doublet_method: "scDblFinder"    # default parameters
+
+# ----- Single-cell QC (scRNA-seq: Neftel) -----
+scrnaseq_qc:
+  min_features: 500
+  min_counts: 1000
+  max_pct_mito: 10
+
+# ----- Stage 1: AD vulnerable neuron signature (Leng) -----
+stage1:
+  ad_group_braak: [6]              # advanced AD group
+  control_group_braak: [0]         # control group
+  brain_region: "entorhinal cortex" # primary region; SFG reserved for sensitivity
+  rorb_percentile: 0.75            # RORB-high threshold
+  de_fdr_threshold: 0.05
+  de_log2fc_threshold: -0.5        # downregulated in AD
+  min_donors_per_group: 3          # pseudobulk requirement
+  covariates: ["age", "sex"]
+
+# ----- Stage 2: GBM neural-mimicry signature (Neftel) -----
+stage2:
+  neural_lineage_states: ["NPClike", "OPClike"]
+  other_states: ["AClike", "MESlike"]
+  de_fdr_threshold: 0.05
+  de_log2fc_threshold: 0.5         # upregulated in neural-lineage states
+  min_cells_per_tumor_state: 20    # exclude tumor-state combos with too few cells
+
+# ----- Stage 3: Convergence tests (H2) -----
+stage3:
+  top_n_hypergeometric: 200        # pre-specified N for Test 2
+  permutation_n: 1000              # pre-specified permutations for Test 3
+  rrho_step_size: 100              # RRHO2 heatmap resolution
+  # Decision thresholds (pre-specified in plan Section 2.3):
+  rrho_fdr_threshold: 0.001
+  hypergeometric_or_threshold: 3
+  hypergeometric_p_threshold: 0.001  # Bonferroni-corrected
+  permutation_p_threshold: 0.01
+
+# ----- Stage 4: Bulk re-analysis (H1) -----
+stage4:
+  bretigea_n_markers: 50           # markers per cell type
+  bretigea_cell_types: ["neu", "ast", "mic", "oli", "opc", "end"]
+  music_reference: "allen_m1"      # MuSiC reference (Allen M1 snRNA-seq)
+  # DE thresholds
+  ad_fdr_threshold: 0.05
+  ad_log2fc_threshold: 0.5
+  gbm_fdr_threshold: 0.05
+  gbm_log2fc_threshold: 1.0
+  # H1 decision thresholds (pre-specified in plan Section 2.2):
+  h1_support_ratio_max: 0.20       # controlled/uncorrected <= 20% supports H1
+  h1_reject_ratio_min: 0.50        # >= 50% rejects H1
+
+# ----- WGCNA -----
+wgcna:
+  n_top_variable_genes: 5000
+  soft_power_ad: 14
+  soft_power_gbm: 20
+  min_module_size: 30
+  merge_cut_height: 0.25
+  hub_kme_threshold: 0.7
+  hub_top_n: 50
+
+# ----- Paths -----
+paths:
+  raw_data: "data/raw"
+  intermediate: "results/intermediate"
+  figures: "manuscript/figures"
+  logs: "results/logs"
