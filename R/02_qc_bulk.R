@@ -47,6 +47,15 @@ process_gse48350 <- function() {
 
   gene_expr <- expr_df[best_probe$PROBEID, ]
   rownames(gene_expr) <- best_probe$SYMBOL
+  
+  # ---- Normalise column names to GSM IDs ----
+  # RMA keeps the full CEL file name as column name (e.g. "GSM1176196_1105A-08_EC_48_Affy.CEL.gz").
+  # Metadata is indexed by short GSM ID (e.g. "GSM1176196"), so we strip everything after the first "_"
+  # and the .CEL(.gz) extension.
+  colnames(gene_expr) <- sub("_.*", "",
+                              sub("\\.CEL(\\.gz)?$", "",
+                                  basename(colnames(gene_expr)),
+                                  ignore.case = TRUE))
 
   # ---- Sample metadata (using pre-parsed GEO columns) ----
   gse <- getGEO(filename = list.files(raw_dir, pattern = "series_matrix", full.names = TRUE)[1])
@@ -102,7 +111,7 @@ process_gse48350 <- function() {
   # 2. Age >= 65 (applies to both groups; AD group naturally satisfies; excludes young C samples)
   keep_age <- !is.na(meta$age) & meta$age >= 65
   # 3. Brain region: hippocampus OR entorhinal cortex
-  keep_region <- grepl("hippocampus|entorhinal", tolower(meta$brain_region))
+    keep_region <- grepl("hippocampus", tolower(meta$brain_region))
   # 4. For AD samples, restrict to advanced Braak stages (V, V-VI, VI)
   #    to align with the snRNA-seq analysis (Leng: Braak 0 vs Braak VI)
   advanced_braak <- meta$braak_stage %in% c("V", "V-VI", "VI")
@@ -168,25 +177,82 @@ process_gse36980 <- function() {
 
   gene_expr <- expr_df[best_probe$PROBEID, ]
   rownames(gene_expr) <- best_probe$SYMBOL
+  # ---- Normalise column names to GSM IDs ----
+  # oligo::rma keeps the full CEL file name as column name; metadata uses short GSM IDs.
+  colnames(gene_expr) <- sub("_.*", "",
+                              sub("\\.CEL(\\.gz)?$", "",
+                                  basename(colnames(gene_expr)),
+                                  ignore.case = TRUE))
 
-  # Sample metadata
+   # ---- Sample metadata (using pre-parsed GEO columns) ----
   gse <- getGEO(filename = list.files(raw_dir, pattern = "series_matrix", full.names = TRUE)[1])
   pheno <- pData(gse)
-  # TODO: parse GSE36980-specific metadata columns
+  
+  # GSE36980 diagnosis derivation:
+  # Title format is "AD_XX, biological repN" or "non-AD_XX, biological repN"
+  # The prefix before the first "_" indicates diagnosis.
+  # Verified against pheno$title inspection during data exploration.
+  title_prefix <- sub("_.*", "", pheno$title)
+  diagnosis <- dplyr::case_when(
+    title_prefix == "AD" ~ "AD",
+    title_prefix == "non-AD" ~ "Control",
+    TRUE ~ NA_character_
+  )
+  
   meta <- data.frame(
     sample_id = rownames(pheno),
-    diagnosis = pheno$`characteristics_ch1`,   # TODO
-    age = NA,                                  # TODO
-    sex = NA,
-    brain_region = pheno$`characteristics_ch1.1`, # TODO
+    diagnosis = diagnosis,
+    age = as.numeric(pheno$`age:ch1`),
+    sex = pheno$`Sex:ch1`,
+    brain_region = pheno$`tissue:ch1`,
+    braak_stage = NA_character_,   # GSE36980 does not provide Braak staging
+    apoe = NA_character_,
+    mmse = NA_real_,
+    ethnicity_code = "Japanese",   # Hokama et al. 2014 Japanese cohort
     dataset = "GSE36980",
     stringsAsFactors = FALSE
   )
+  
+  log_msg(STAGE, sprintf("Diagnosis assignments: AD=%d, Control=%d, Excluded=%d",
+                         sum(meta$diagnosis == "AD", na.rm = TRUE),
+                         sum(meta$diagnosis == "Control", na.rm = TRUE),
+                         sum(is.na(meta$diagnosis))))
+  
+  # Match sample order to expression columns
   meta <- meta[match(colnames(gene_expr), meta$sample_id), ]
-
-  region_ok <- grepl("hippocampus|temporal", tolower(meta$brain_region))
-  meta <- meta[region_ok, ]
-  gene_expr <- gene_expr[, region_ok]
+  
+  # ---- Filters ----
+  # 1. Resolvable diagnosis
+  keep_diag <- !is.na(meta$diagnosis)
+  # 2. Age >= 65 (excludes young controls; all AD samples naturally satisfy)
+  keep_age <- !is.na(meta$age) & meta$age >= 65
+  # 3. Brain region: hippocampus OR temporal cortex (plan Section 4.1)
+  #    Frontal cortex excluded — GSE36980 has frontal cortex samples but they do not
+  #    overlap with GSE48350's anatomy (hippocampus + entorhinal cortex).
+  #    The only common region across cohorts is hippocampus; temporal cortex is retained
+  #    as GSE36980's anatomically closest region to entorhinal cortex.
+    keep_region <- grepl("hippocampus", tolower(meta$brain_region))
+  
+  keep <- keep_diag & keep_age & keep_region
+  
+  log_msg(STAGE, sprintf("Filter cascade: total=%d -> diagnosis=%d -> age65+=%d -> region=%d",
+                         nrow(meta), sum(keep_diag),
+                         sum(keep_diag & keep_age),
+                         sum(keep)))
+  
+  meta <- meta[keep, ]
+  gene_expr <- gene_expr[, keep]
+  
+  log_msg(STAGE, sprintf("Final GSE36980 cohort composition:"))
+  log_msg(STAGE, sprintf("  Diagnosis: %s",
+                         paste(names(table(meta$diagnosis)), table(meta$diagnosis),
+                               sep = "=", collapse = ", ")))
+  log_msg(STAGE, sprintf("  Region: %s",
+                         paste(names(table(meta$brain_region)), table(meta$brain_region),
+                               sep = "=", collapse = ", ")))
+  log_msg(STAGE, sprintf("  Sex: %s",
+                         paste(names(table(meta$sex)), table(meta$sex),
+                               sep = "=", collapse = ", ")))
 
   log_msg(STAGE, sprintf("GSE36980 after QC: %d genes x %d samples", nrow(gene_expr), ncol(gene_expr)))
   list(expr = gene_expr, meta = meta)
@@ -198,6 +264,21 @@ process_gse36980 <- function() {
 
 merge_ad_cohorts <- function(d1, d2) {
   log_msg(STAGE, "Merging AD cohorts at common gene symbols")
+    # ---- Harmonise categorical variables across cohorts ----
+  # Different GEO submissions use different conventions for the same categories.
+  # Sex: GSE36980 uses "F"/"M", GSE48350 uses "female"/"male"
+  # Brain region: GSE36980 uses "Hippocampus" (capital H), GSE48350 uses "hippocampus"
+  harmonise_meta <- function(m) {
+    m$sex <- dplyr::case_when(
+      tolower(m$sex) %in% c("f", "female") ~ "female",
+      tolower(m$sex) %in% c("m", "male") ~ "male",
+      TRUE ~ NA_character_
+    )
+    m$brain_region <- tolower(m$brain_region)
+    m
+  }
+  d1$meta <- harmonise_meta(d1$meta)
+  d2$meta <- harmonise_meta(d2$meta)
   common <- intersect(rownames(d1$expr), rownames(d2$expr))
   log_msg(STAGE, sprintf("Common genes: %d", length(common)))
 
@@ -218,7 +299,16 @@ merge_ad_cohorts <- function(d1, d2) {
   log_msg(STAGE, sprintf("Pre-ComBat PC1 vs dataset r = %.3f", r_pc1_dataset_pre))
 
   # ---- ComBat: preserve diagnosis + brain region, remove dataset effect ----
-  mod <- model.matrix(~ diagnosis + brain_region, data = meta_merged)
+    # Build model matrix dynamically: include only covariates with >= 2 levels
+  # (brain_region is now uniform "hippocampus" after Yol 1 filtering to common region)
+  preserve_vars <- c("diagnosis", "brain_region", "sex")
+  usable_vars <- preserve_vars[sapply(preserve_vars, function(v) {
+    length(unique(na.omit(meta_merged[[v]]))) >= 2
+  })]
+  log_msg(STAGE, sprintf("ComBat preserved covariates: %s", paste(usable_vars, collapse = " + ")))
+  
+  formula_str <- paste("~", paste(usable_vars, collapse = " + "))
+  mod <- model.matrix(as.formula(formula_str), data = meta_merged)
   expr_combat <- sva::ComBat(dat = expr_merged,
                               batch = meta_merged$dataset,
                               mod = mod,
