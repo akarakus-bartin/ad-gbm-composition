@@ -56,3 +56,27 @@ Template for new entries:
 **Impact on primary analysis:** <none | H1 decision affected | H2 decision affected | sensitivity only>
 **Justification:** <scientific reasoning>
 -->
+
+---
+
+## 2026-09-20 — AD meta-cohort: sadece hippocampus + kategori uyumlaştırma
+
+**Section of the plan:** 4.1 (inclusion criteria) and 5.1 (meta-cohort assembly)
+**Commit:** be85e304c34a6ffb824c32cffe9c961aa73f2a8b
+
+**Reason:** Meta-cohort birleştirmesinde iki metodolojik zorlukla karşılaşıldı:
+1. **Bölge asimetrisi:** GSE48350 hippocampus + entorhinal cortex içerir; GSE36980 hippocampus + temporal cortex içerir. Sadece hippocampus her iki kohortta ortaktır. Farklı bölgeleri birleştirmek anatomik heterojenlik yaratır ve bölge × dataset arasında perfect confounding'e yol açar.
+2. **Kategori kodlaması tutarsız:** İki GEO submission farklı kodlama konvansiyonları kullanmış — Sex: "F"/"M" (GSE36980) vs "female"/"male" (GSE48350); Brain region: "Hippocampus" (GSE36980) vs "hippocampus" (GSE48350).
+
+**Change:** Üç ilgili düzenleme yapıldı:
+1. **Bölge filtresi hippocampus'a daraltıldı:** Her iki `process_gse48350()` ve `process_gse36980()` fonksiyonunda `keep_region` filtresi sadece "hippocampus" içeren örnekleri tutar. GSE48350'de entorhinal cortex örnekleri (n=14), GSE36980'de temporal cortex örnekleri (n=27) analiz dışında kaldı.
+2. **`merge_ad_cohorts()` fonksiyonuna `harmonise_meta()` iç fonksiyonu eklendi:** Sex ("F"/"M" → "female"/"male") ve brain_region (tolower normalisation) uyumlaştırıldı.
+3. **`merge_ad_cohorts()` ComBat model matrix'i dinamik hale getirildi:** Sadece ≥2 seviyesi olan covariate'ler koruma değişkeni olarak dahil edilir. Bu meta-cohort'ta `brain_region` tek seviyeli ("hippocampus") olduğu için ComBat modelinden çıkarıldı; `diagnosis + sex` korundu.
+
+**Impact on primary analysis:**
+- Final AD meta-cohort: 17,973 gen × 51 örnek (18 AD + 33 Control), planın öngördüğü 122'den az.
+- ComBat kabul kriterleri karşılandı: post-correction PC1 vs dataset r = 0.093 (eşik <0.20 ✓), PC1 vs diagnosis r = 0.485 (eşik ≥0.30 ✓).
+- Örnek sayısı azaldığı için istatistiksel güç sınırlıdır; bulk düzeyi cell-composition-controlled DE'nin küçük etki büyüklüklerini tespit etme kapasitesi düşer. Ancak H1 için beklenen etki (bulk DEG'lerin composition control altında büyük ölçüde kaybolması) yeterince büyüktür.
+- H1 karar kuralı değişmez (pre-specified 20%/50% oranı korunur).
+
+**Justification:** Sadece hippocampus'a odaklanmak metodolojik olarak daha temiz bir meta-analiz sağlar (anatomik homojenlik). Hippocampus AD patolojisinin en erken ve en yoğun etkilendiği bölgedir (Braak & Braak 1991); Stage 1 snRNA-seq analizinde kullanılan entorhinal cortex ile histopatolojik olarak yakın komşudur ve benzer vulnerable nöron popülasyonlarını içerir (Leng et al. 2021).
