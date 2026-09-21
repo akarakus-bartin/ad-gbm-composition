@@ -14,92 +14,71 @@ STAGE <- "qc_singlecell"
 # ------------------------------------------------------------------------------
 
 process_leng <- function() {
-  log_msg(STAGE, "Processing Leng snRNA-seq")
-  raw_dir <- here::here(PARAMS$paths$raw_data, PARAMS$data$leng_geo)
-
-  # NOTE: Leng data may need to be downloaded from Broad Single Cell Portal
-  # (SCP1198) rather than GEO for the cleanest count matrix + cell annotations.
-  # Adapt the loading step to whichever source you use.
-
-  # Expected: a count matrix + a per-cell metadata table.
-  # Below assumes the count matrix and metadata are in raw_dir.
-  count_files <- list.files(raw_dir, pattern = "counts|matrix", full.names = TRUE)
-  meta_files  <- list.files(raw_dir, pattern = "meta|annot",   full.names = TRUE)
-
-  assert_that(length(count_files) > 0, "Leng count matrix not found")
-  assert_that(length(meta_files) > 0, "Leng cell metadata not found")
-
-  # TODO: adapt to actual file format (10x mtx trio vs single tsv/rds vs h5ad)
-  # Placeholder using a hypothetical .rds
-  counts <- readRDS(count_files[1])
-  cell_meta <- read.delim(meta_files[1], row.names = 1, stringsAsFactors = FALSE)
-
-  # Align
-  common_cells <- intersect(colnames(counts), rownames(cell_meta))
-  counts <- counts[, common_cells]
-  cell_meta <- cell_meta[common_cells, , drop = FALSE]
-
-  seu <- CreateSeuratObject(counts = counts, meta.data = cell_meta,
-                            min.cells = 3, min.features = PARAMS$snrnaseq_qc$min_features)
-
-  # Mitochondrial fraction
-  seu[["percent.mt"]] <- PercentageFeatureSet(seu, pattern = "^MT-")
-
-  # Pre-QC snapshot
-  log_msg(STAGE, sprintf("Leng before QC: %d cells", ncol(seu)))
-  log_msg(STAGE, sprintf("  Median nFeature: %d, median nCount: %d, median %%mito: %.2f",
-                         median(seu$nFeature_RNA), median(seu$nCount_RNA), median(seu$percent.mt)))
-
-  # QC filter
-  seu <- subset(seu,
-                subset = nFeature_RNA >= PARAMS$snrnaseq_qc$min_features &
-                         nCount_RNA >= PARAMS$snrnaseq_qc$min_counts &
-                         percent.mt <= PARAMS$snrnaseq_qc$max_pct_mito)
-
-  # Doublet detection with scDblFinder (per sample if metadata has sample id)
-  if ("sample_id" %in% colnames(seu@meta.data)) {
-    sce <- as.SingleCellExperiment(seu)
-    sce <- scDblFinder(sce, samples = "sample_id")
-    seu$doublet_class <- sce$scDblFinder.class
-    seu <- subset(seu, subset = doublet_class == "singlet")
-  } else {
-    log_msg(STAGE, "No sample_id metadata; running scDblFinder without sample grouping")
-    sce <- as.SingleCellExperiment(seu)
-    sce <- scDblFinder(sce)
-    seu$doublet_class <- sce$scDblFinder.class
-    seu <- subset(seu, subset = doublet_class == "singlet")
+  log_msg(STAGE, "Processing Leng snRNA-seq (scAlign-assigned from Synapse syn21788402)")
+  
+  # ---- Load pre-processed EC excitatory neurons (SingleCellExperiment) ----
+  # Source: Synapse syn21788402 (Leng et al. 2021 curated data).
+  # This file contains fine-resolution subclustering (subclusterAssignment column)
+  # with the "s" naming used in Leng et al. 2021 Fig. 2 (e.g. EC:Exc.s1, EC:Exc.s2, EC:Exc.s4).
+  # We use the EC-only file because SFG serves as the anatomical control, not a discovery cohort.
+  sce_path <- here::here(PARAMS$paths$raw_data, "GSE147528", "synapse_processed", 
+                          "sce.EC.Exc.scAlign.rds")
+  assert_that(file.exists(sce_path),
+              sprintf("Leng EC excitatory subclustered SCE not found at %s. Download from Synapse syn21788402/EC_excitatoryNeurons.", sce_path))
+  
+  sce_ec <- readRDS(sce_path)
+  log_msg(STAGE, sprintf("Loaded EC excitatory SCE: %d genes x %d cells",
+                         nrow(sce_ec), ncol(sce_ec)))
+  
+  # ---- Validate expected metadata columns ----
+  required_cols <- c("SampleID", "BraakStage", "subclusterAssignment", "clusterCellType")
+  missing_cols <- setdiff(required_cols, colnames(SummarizedExperiment::colData(sce_ec)))
+  assert_that(length(missing_cols) == 0,
+              sprintf("Missing required metadata columns: %s", paste(missing_cols, collapse = ", ")))
+  
+  # ---- Report cohort composition (pre-filter) ----
+  log_msg(STAGE, "Cohort composition (all EC excitatory cells):")
+  log_msg(STAGE, sprintf("  Braak stages: %s",
+                         paste(names(table(sce_ec$BraakStage)), 
+                               table(sce_ec$BraakStage), sep = "=", collapse = ", ")))
+  log_msg(STAGE, sprintf("  Subclusters:  %s",
+                         paste(names(table(sce_ec$subclusterAssignment)),
+                               table(sce_ec$subclusterAssignment), sep = "=", collapse = ", ")))
+  
+  # ---- Filter to RORB+ vulnerable subclusters (Leng Fig. 2c) ----
+  # EC:Exc.s1, EC:Exc.s2, EC:Exc.s4 all express RORB and CTC-340A15.2, CTC-535M15.2.
+  # These are the "vulnerable" set in Leng et al. 2021.
+  # Non-vulnerable subclusters (s0, s3, s5, s6, s7, s8) are kept as internal controls
+  # but placed in a separate SCE for parallel DE analysis.
+  vulnerable_subclusters <- PARAMS$leng$vulnerable_subclusters
+  if (is.null(vulnerable_subclusters)) {
+    vulnerable_subclusters <- c("EC:Exc.s1", "EC:Exc.s2", "EC:Exc.s4")
   }
-
-  log_msg(STAGE, sprintf("Leng after QC: %d cells", ncol(seu)))
-
-  # Standard normalisation
-  seu <- NormalizeData(seu, scale.factor = 10000)
-  seu <- FindVariableFeatures(seu, nfeatures = 2000)
-  seu <- ScaleData(seu)
-  seu <- RunPCA(seu, npcs = 30, verbose = FALSE)
-
-  # ---- Verify cell-type annotations with canonical markers ----
-  # These are the marker gene panels from Section 5.2 of the plan.
-  # If annotations are missing, this section labels cells by highest-scoring marker set.
-
-  marker_panels <- list(
-    excitatory = c("SNAP25", "SYT1", "RBFOX3", "SLC17A7", "CAMK2A"),
-    inhibitory = c("GAD1", "GAD2"),
-    rorb_high  = c("RORB"),
-    astrocyte  = c("GFAP", "AQP4"),
-    microglia  = c("C1QA", "CSF1R"),
-    oligodendrocyte = c("MOG", "MBP")
-  )
-
-  for (name in names(marker_panels)) {
-    genes <- intersect(marker_panels[[name]], rownames(seu))
-    if (length(genes) > 0) {
-      seu <- AddModuleScore(seu, features = list(genes), name = paste0("score_", name))
-    }
+  
+  vuln_cells    <- sce_ec$subclusterAssignment %in% vulnerable_subclusters
+  nonvuln_cells <- !vuln_cells
+  
+  sce_vuln    <- sce_ec[, vuln_cells]
+  sce_nonvuln <- sce_ec[, nonvuln_cells]
+  
+  log_msg(STAGE, sprintf("Vulnerable RORB+ subclusters (s1/s2/s4): %d cells", ncol(sce_vuln)))
+  log_msg(STAGE, sprintf("Non-vulnerable control subclusters:      %d cells", ncol(sce_nonvuln)))
+  
+  # ---- Report Braak x Sample x Subcluster in vulnerable subset ----
+  log_msg(STAGE, "Vulnerable subset — cells per donor x subcluster:")
+  cross <- as.data.frame.matrix(table(sce_vuln$SampleID, sce_vuln$subclusterAssignment))
+  cross <- cross[rowSums(cross) > 0, , drop = FALSE]
+  # Print row by row so it fits in log
+  for (donor in rownames(cross)) {
+    braak <- unique(as.character(sce_vuln$BraakStage[sce_vuln$SampleID == donor]))[1]
+    log_msg(STAGE, sprintf("  %s (Braak %s): %s",
+                           donor, braak,
+                           paste(colnames(cross), cross[donor, ], sep = "=", collapse = ", ")))
   }
-
-  # Save
-  seu
+  
+  list(sce_vulnerable = sce_vuln,
+       sce_nonvulnerable = sce_nonvuln,
+       vulnerable_subclusters = vulnerable_subclusters)
 }
 
 # ------------------------------------------------------------------------------

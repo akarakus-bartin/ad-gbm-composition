@@ -102,3 +102,9 @@ paths:
   intermediate: "results/intermediate"
   figures: "manuscript/figures"
   logs: "results/logs"
+
+leng:
+  vulnerable_subclusters:
+    - "EC:Exc.s1"
+    - "EC:Exc.s2"
+    - "EC:Exc.s4"
