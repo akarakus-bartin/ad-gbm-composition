@@ -163,3 +163,48 @@ Template for new entries:
 **Impact on primary analysis:** DE tablosu 2,410 → 1,576 FDR<0.05 gene (myeloid-driven sahte sinyaller elendi). Top DOWN genler artık gerçek MES-like biyoloji (ANXA1, CHI3L1, CD44, VIM, CCL2, SERPINE1, CA9 — hypoxia+chemokine profile). Top UP genler değişmedi (NPC/OPC zaten temizdi). H2 için asıl önemli olan NeuralLineage UP signature sağlam ve zenginleştirildi (OPALIN, MAG, DLX5/6, STMN2, DCX, SOX11, PLP1).
 
 **Justification:** (a) Metodolojik zorunluluk: myeloid-kontamine MES DE'si biyolojik olarak yorumlanamaz, hakem sorgular; (b) Neftel'in kendi 3-kriter filter'ının önemli bir bileşenini replike ediyor; (c) sonuçları biyolojik marker-based doğrulama (myeloid markers state başına <0.1 seviyesine düştü) filter'ın başarısını belgeliyor; (d) toplam filter oranı (%12.3) Neftel'in raporlanan non-malignant fraction (~%13) ile uyumlu.
+
+---
+
+## 2026-09-21 — Stage 3 keşif: H2 iki bağımsız konvergens eksenine ayrıldı
+
+**Section of the plan:** 2.3 (H2 karar kuralı), 6.3 (Stage 3 procedure)
+**Commit:** <sonraki commit>
+
+**Pre-specified H2 formulation:** Analiz planı Bölüm 2.3'te H2 tek bir konvergens ekseni olarak tanımlıydı: **AD-vulnerable RORB+ nöronlarda kaybolan genler (Leng DOWN) ile GBM neural-lineage (NPC/OPC-like) state'te kazanılan genler (Neftel UP)** transkripsiyonel olarak convergent olmalı. Bu 'identity oscillation' hipotezi idi.
+
+**Pre-specified karar kuralı sonucu:**
+- Test 1 (RRHO2): PASS (BH-P = 5.3e-4)
+- Test 2 (Hypergeometric top-200): FAIL (OR = 1.52, eşik ≥3)
+- Test 3 (Permutation): FAIL (empirical P = 0.098, eşik <0.01)
+- **H2 REJECTED (1/3 test PASS)**
+
+**Discovery — RRHO2 sinyalinin sign convention analizi:** Post-hoc quadrant analizi RRHO2'nin PASS sinyalinin **pre-specified H2a yönünde değil**, beklenmedik **'both DOWN' yönünde** olduğunu ortaya koydu (RRHO2 heatmap max pozisyonu row 35/43, col 38/43 — bottom-right quadrant). Bu, orijinal skeleton'daki sign convention'ın **yorumsal olarak** H2a'ya işaret ettiği ancak metodolojik olarak concordant (aynı yön) overlap test ettiği anlamına geliyor.
+
+**Manuel 4-quadrant analiz sonuçları (top 200):**
+- UU (both UP): 11 overlap, enrichment 1.06x, p = 0.47 (rastgele)
+- UD (AD UP × GBM DOWN): 8 overlap, 0.77x, p = 0.83 (rastgele altı)
+- **DU (AD DOWN × GBM UP) [H2a]:** 18 overlap, 1.74x, p = 0.014 (borderline, biyolojik zengin)
+- **DD (both DOWN) [novel]:** 20 overlap, 1.93x, p = 0.003 (en güçlü, keşif)
+
+**İki bağımsız gen seti tespit edildi (DU ∩ DD = 0):**
+
+**Axis 1 — DU (H2a partial support):** CD24, STMN1, SYT4, APLP1, ATP1A3, KIF1A, SEPT3, BCL11A, NFIX, FSCN1, TAGLN3, FAIM2, USP22, PGRMC1, PODXL2, PTMA, YWHAG, SUN2, ZDHHC22 (18 gen). Sinaptik/nöronal identity + neural developmental TF'ler. Neftel'in NPC modülünün top marker'ı CD24 dahil. Biyolojik yorum: AD'de kaybolan nöronal identity, GBM NPC/OPC'de yeniden ortaya çıkıyor.
+
+**Axis 2 — DD (novel finding):** JUNB, ZFP36L1, PER1, CEBPD, FLNA, SLC2A3, SDC3, ATP1B2, HRH1, BAIAP2, PFKFB3, ALDOA, UBC, IDS, PEA15, NRN1, PPP2CB, OLFM1, CANX, PNMA2 (20 gen). Immediate early genes + metabolic stress + glial support. Biyolojik yorum: Hem AD vulnerable neurons hem GBM AC/MES-like state, activity-dependent transkripsiyon ve metabolik homeostasis genlerini kaybediyor — 'shared cellular fragility' ekseni.
+
+**Change:** Pre-specified H2 karar kuralı korunuyor (**H2 REJECTED**), ancak Stage 3'ün downstream yorumu iki alternatif konvergens ekseninde revize ediliyor. Manuskrit hikayesi:
+- **Primary conclusion:** Pre-specified H2 (identity oscillation, DU quadrant) sıkı eşiklerde reddedildi.
+- **Secondary discovery (DU):** Kısmi H2a support — 18 gen, biyolojik olarak tutarlı, borderline signifikans (p=0.014). Neuronal identity axis.
+- **Tertiary discovery (DD, novel):** Stronger unexpected convergence — 20 gen, activity-dependent + metabolic stress axis. Both diseases lose same 'cellular fragility' program.
+
+**Justification:**
+(a) **Honest science:** Pre-specified karar korunmuş; discovery findings ayrı bölümde sunulacak.
+(b) **Multiple testing awareness:** DD ekseni pre-specified değildi, dolayısıyla p=0.003 tek başına 'unbiased significant' claim için yeterli değil — validation cohort veya independent dataset ile confirm edilmeli.
+(c) **Biyolojik zenginlik:** Her iki eksen de anlamlı biyoloji (sinaptik/developmental vs metabolic/activity) — random noise değil, coherent gene sets.
+(d) **Manuskrit için değer:** İki eksen bulmak tek eksenden daha zengin bir hikaye. Discussion bölümü 'cross-disease convergence has multiple modalities' argümanı için elverişli.
+
+**Follow-up (yarına):**
+1. RRHO2 sign convention bug'ı `06_stage3_convergence.R`'da düzelt (yorum vs kod uyumsuzluğu var).
+2. 4-quadrant analiz kalıcı olarak Stage 3 pipeline'ına ekle.
+3. GO/KEGG pathway enrichment her iki gen seti için — biyolojik yorumu güçlendirmek.

@@ -11,10 +11,12 @@
 # ==============================================================================
 
 source(here::here("R", "00_setup.R"))
+suppressPackageStartupMessages(library(RRHO2))
+suppressPackageStartupMessages(library(dplyr))
 STAGE <- "stage3"
 
-ad <- load_intermediate("stage1_ad_vulnerable")
-gbm <- load_intermediate("stage2_gbm_neural_mimicry")
+ad <- load_intermediate("leng_deg_primary")
+gbm <- load_intermediate("neftel_deg_primary")
 
 # ------------------------------------------------------------------------------
 # 1. Restrict to shared gene universe
@@ -30,6 +32,12 @@ ad_de <- ad$de_table %>% filter(gene %in% shared_universe)
 gbm_de <- gbm$de_table %>% filter(gene %in% shared_universe)
 
 # ------------------------------------------------------------------------------
+# TODO (yarına): Sign convention audit gerekli.
+# Yorumlar H2a (discordant) beklerken kod concordant (both UP or both DOWN)
+# konvergensi test ediyor. Manuel 4-quadrant analiz (stage3_quadrant_analysis.rds)
+# gerçek sinyalin DD (both DOWN, novel) yönünde olduğunu ortaya çıkardı.
+# Yeniden yazım için: DEVIATIONS.md 2026-09-21 Stage 3 keşif entry'sine bak.
+
 # 2. Test 1 (RRHO2): rank-rank hypergeometric overlap
 # ------------------------------------------------------------------------------
 # Sign convention:
