@@ -88,6 +88,40 @@ preprocess_neftel <- function(tpm_log, ea_threshold = 4) {
 }
 
 # ------------------------------------------------------------------------------
+# Helper 2b: Filter non-malignant immune cells (Neftel Fig 1B replication)
+# Neftel identified non-malignant cells via 3 methods (CNA + markers + tSNE).
+# We apply the marker-based subset: CD45 (PTPRC) > 1 OR macrophage score > 4.
+# This removes ~12% of cells, comparable to Neftel non-malignant fraction (~13%).
+# ------------------------------------------------------------------------------
+filter_immune_cells <- function(linear_tpm, cd45_threshold = 1, macro_threshold = 4) {
+  # Macrophage marker set (Neftel Methods)
+  macro_markers <- c("CD14", "AIF1", "FCER1G", "FCGR3A", "TYROBP", "CSF1R")
+  macro_in_mat <- intersect(macro_markers, rownames(linear_tpm))
+  assert_that(length(macro_in_mat) >= 4,
+              sprintf("At least 4 macrophage markers required, found: %s",
+                      paste(macro_in_mat, collapse = ",")))
+  
+  # Convert linear TPM back to log-scale for marker expression
+  E_scale <- log2(linear_tpm / 10 + 1)
+  
+  # CD45 expression per cell
+  cd45_expr <- if ("PTPRC" %in% rownames(E_scale)) E_scale["PTPRC", ] else rep(0, ncol(E_scale))
+  # Average macrophage marker expression per cell
+  macro_score <- colMeans(E_scale[macro_in_mat, ])
+  
+  is_immune <- (cd45_expr > cd45_threshold) | (macro_score > macro_threshold)
+  
+  log_msg(STAGE, sprintf("Non-malignant filter (CD45>%.1f OR macro_score>%.1f):",
+                          cd45_threshold, macro_threshold))
+  log_msg(STAGE, sprintf("  Immune cells excluded: %d/%d (%.1f%%)",
+                          sum(is_immune), length(is_immune), 100*mean(is_immune)))
+  log_msg(STAGE, sprintf("  Malignant cells retained: %d", sum(!is_immune)))
+  
+  is_immune
+}
+
+
+# ------------------------------------------------------------------------------
 # Helper 3: AddModuleScore via Seurat (Neftel Methods replication)
 # ------------------------------------------------------------------------------
 score_neftel_modules <- function(linear_tpm, Er_mat, meta, modules,
@@ -259,6 +293,17 @@ nf <- load_neftel_adult()
 
 # 3. Preprocess (reverse log, Ea filter, gene-center)
 pp <- preprocess_neftel(nf$tpm_log)
+
+# 3b. Non-malignant filter (Neftel Fig 1B marker-based subset)
+is_immune <- filter_immune_cells(pp$linear_tpm)
+malignant_cells <- names(is_immune)[!is_immune]
+pp$linear_tpm <- pp$linear_tpm[, malignant_cells]
+pp$E_filt <- pp$E_filt[, malignant_cells]
+pp$Er <- pp$Er[, malignant_cells]
+nf$meta <- nf$meta[malignant_cells, ]
+log_msg(STAGE, sprintf("Matrix after immune filter: %d genes x %d cells",
+                       nrow(pp$linear_tpm), ncol(pp$linear_tpm)))
+
 
 # 4. Score with Seurat AddModuleScore
 scores <- score_neftel_modules(pp$linear_tpm, pp$Er, nf$meta, neftel_modules)

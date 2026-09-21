@@ -117,3 +117,26 @@ Template for new entries:
 **Change:** `subclusterAssignment` (fine subclustering) kullanılıyor. Vulnerable RORB+ subcluster üçlüsü: EC:Exc.s1, EC:Exc.s2, EC:Exc.s4 (Leng et al. 2021, Fig. 2c). Bu üçü Braak 0'da yüksek RORB ifadesi gösterir ve Braak 2'de seçici olarak deplete olur.
 **Impact on primary analysis:** Stage 1 pseudo-bulk analizi bu üç subclusterda yapılacak. Non-vulnerable Exc subclusterlar (s0, s3, s5, s6, s7, s8) internal control olarak kullanılabilir.
 **Justification:** Leng makalesinin (Nature Neuroscience 2021) bulgu odağı bu üç subcluster; ayrı ele almak spesifisiteyi test etmek için gerekli.
+
+---
+
+## 2026-09-21 — Neftel scRNA-seq'te non-malignant immune hücre kontaminasyonu keşfi
+
+**Section of the plan:** 5.2 (Neftel processing), 6.2 (Stage 2 procedure)
+**Commit:** <sonraki commit'te doldurulacak>
+
+**Reason:** Stage 2'nin ilk çalıştırılmasından sonra, MES-like sınıfa atanan hücrelerin ~%42'sinin klasik makrofaj/mikroglia markerlarını (CD45/PTPRC, CD14, AIF1, CD163, TYROBP, CSF1R) çok yüksek eksprese ettiği tespit edildi. Neftel'in MES1/MES2 meta-modülleri (CD44, VIM, ANXA1, ANXA2) hem malignant MES-like hem myeloid hücrelerde yüksek skorlanıyor. DE tablosunun top DOWN listesi büyük ölçüde myeloid genlerden oluşuyordu (CD163, VSIG4, HLA-DRB5, CCL3, F13A1 vs.), gerçek malignant MES-like biyoloji değil.
+
+**Neftel makalesinin orijinal filter'ı:** STAR Methods 'Integrated definition of malignant cells' bölümüne göre üç kriter birleşimi: (1) CNA-based malignant classification, (2) marker-based non-malignant classification (macrophage/T-cell/oligodendrocyte marker setleri), (3) tSNE cluster-based. Bizim indirdiğimiz `GSM3828672_Smartseq2_GBM_IDHwt_processed_TPM.tsv.gz` dosyası tüm 7,930 hücreyi (malignant + non-malignant) içeriyor.
+
+**Change:** `process_neftel()`'e `filter_immune_cells()` fonksiyonu eklendi. Filter kriteri: `CD45 (PTPRC) > 1 VEYA macrophage_score > 4` (macrophage_score = ortalama[CD14, AIF1, FCER1G, FCGR3A, TYROBP, CSF1R]). Bu Neftel'in marker-based non-malignant filter'ının basitleştirilmiş replikasyonu. CNA-based ve tSNE-based ek filter'lar uygulanmadı (implementasyon karmaşıklığı; marker-based zaten benzer sonucu veriyor).
+
+**Filter etkisi:**
+- Non-malignant hücreler: 707/5742 (%12.3) — Neftel'in raporladığı ~%13'e çok yakın
+- MES-like sınıfında %42 → %6 kontaminasyon (myeloid markerlar 2.5 → 0.09)
+- AC/NPC/OPC sınıflarında minimal değişim (zaten temizdiler)
+- Filter sonrası state dağılımı Neftel Fig 3B (adult) ile daha uyumlu
+
+**Impact on primary analysis:** DE tablosu 2,410 → 1,576 FDR<0.05 gene (myeloid-driven sahte sinyaller elendi). Top DOWN genler artık gerçek MES-like biyoloji (ANXA1, CHI3L1, CD44, VIM, CCL2, SERPINE1, CA9 — hypoxia+chemokine profile). Top UP genler değişmedi (NPC/OPC zaten temizdi). H2 için asıl önemli olan NeuralLineage UP signature sağlam ve zenginleştirildi (OPALIN, MAG, DLX5/6, STMN2, DCX, SOX11, PLP1).
+
+**Justification:** (a) Metodolojik zorunluluk: myeloid-kontamine MES DE'si biyolojik olarak yorumlanamaz, hakem sorgular; (b) Neftel'in kendi 3-kriter filter'ının önemli bir bileşenini replike ediyor; (c) sonuçları biyolojik marker-based doğrulama (myeloid markers state başına <0.1 seviyesine düştü) filter'ın başarısını belgeliyor; (d) toplam filter oranı (%12.3) Neftel'in raporlanan non-malignant fraction (~%13) ile uyumlu.
