@@ -80,3 +80,40 @@ Template for new entries:
 - H1 karar kuralı değişmez (pre-specified 20%/50% oranı korunur).
 
 **Justification:** Sadece hippocampus'a odaklanmak metodolojik olarak daha temiz bir meta-analiz sağlar (anatomik homojenlik). Hippocampus AD patolojisinin en erken ve en yoğun etkilendiği bölgedir (Braak & Braak 1991); Stage 1 snRNA-seq analizinde kullanılan entorhinal cortex ile histopatolojik olarak yakın komşudur ve benzer vulnerable nöron popülasyonlarını içerir (Leng et al. 2021).
+
+---
+
+## 2026-09-21 — Leng snRNA-seq kohortu keşifsel doğrulama ve karar noktaları
+
+**Section of the plan:** 4.1 (Leng cohort inclusion), 6.1 (Stage 1 procedure), 6.2 (cell type annotation)
+**Commit:** 6097b8
+
+**Reason:** Leng et al. 2021 (GSE147528) verisi manuel inceleme sonrasında analiz planında öngörülmeyen dört yapısal özellik gösterdi. Bu keşifler dört karar noktasını gerektirdi:
+
+### Karar 1 — Braak stage tasarımı (Braak 0 vs 2 ana, Braak 0 vs 6 sensitivity)
+
+**Reason:** Leng kohortu 3 Braak grubu içeriyor (0/2/6). Manuel inceleme + makalenin ana bulgusu, RORB+ vulnerable neuron depletion'ın **Braak 0 → Braak 2 geçişinde pik yaptığını** (%60-79 azalma), sonra plato oluşturduğunu göstermektedir (makalede: 'no further decrease in Braak stage 6'). Verinin kendi doğrulaması: EC:Exc.s1 (835→326, -61%), EC:Exc.s2 (666→232, -65%), EC:Exc.s4 (382→80, -79%) — hepsi Braak 0 → Braak 2 geçişinde.
+**Change:** Analiz planındaki Braak 0 vs Braak 6 ana karşılaştırma, Braak 0 vs Braak 2 olarak revize edildi. Braak 0 vs Braak 6 sensitivity analiz olarak korundu (plan-uyumlu backup).
+**Impact on primary analysis:** H2 hipotezinin AD-tarafı sinyalini biyolojik olarak en güçlü yakalayan karşılaştırma seçildi. Karar kuralları değişmez (RRHO2 + hypergeometric + permutation). Braak 0 vs 6 sensitivity karşılaştırması sonuçların progression-invariance'ini test eder.
+**Justification:** Leng makalesinin ana bulgusu (Fig. 2c ve Results) selective RORB+ depletion pikinin Braak 0 → Braak 2 geçişinde olduğunu net söylüyor. Sensitivity için Braak 0 vs 6 korunuyor — planla tam uyumlu ve biyolojik olarak da savunulabilir (persistent depletion).
+
+### Karar 2 — Sex asimetrisi
+
+**Reason:** 20 örneğin hepsi Male. Analiz planında sex heterojen kohort öngörülmüştü; gerçek Leng verisi male-only.
+**Change:** Sex covariate modelden çıkarıldı (varyansı sıfır; teknik zorunluluk). Analiz planındaki `~ diagnosis + brain_region + sex + age + dataset` modeli, Leng için `~ diagnosis + age` şeklinde uyarlandı.
+**Impact on primary analysis:** Analitik güç değişmez. Ama sonuçların genellenebilirliği kısıtlı — sadece erkek beyinleri.
+**Justification:** Manuskritin Limitations bölümüne 'findings should be interpreted with caution as generalization to female cohorts requires independent validation' cümlesi eklenecek. Bu yayınlanabilir bir kısıttır; Mathys et al. 2019 gibi büyük snRNA-seq çalışmaları da benzer sex dengesizliklerini raporlamıştır.
+
+### Karar 3 — Cell type annotation kaynağı
+
+**Reason:** Analiz planında cell type ataması için Seurat clustering + marker gen tabanlı manuel etiketleme öngörülmüştü. Ancak Leng'in scAlign-integrated ve cell-type-atanmış işlenmiş verisi Synapse'ta (syn21788402) mevcut.
+**Change:** Kendi Seurat clustering pipeline'ı yerine, Leng'in scAlign-assigned `sce.EC.Exc.scAlign.rds` dosyasındaki `subclusterAssignment` kolonu kullanıldı. Bu, orijinal Leng et al. 2021 analizinin bire bir replikasyonudur.
+**Impact on primary analysis:** RORB+ vulnerable subclusterlar (EC:Exc.s1, EC:Exc.s2, EC:Exc.s4) doğrudan Leng makalesinin tanımladığı gibi filtrelenecek. Kendi clustering yapılsaydı benzer ama tam olarak aynı olmayan clusterlar çıkabilirdi; orijinal atama daha temiz bir zemin.
+**Justification:** (a) Metodolojik güç: Leng makalesinin bulgularının doğrudan replikasyonu; hakemde 'neden farklı clustering?' sorusu doğmaz. (b) Zaman verimliliği. (c) scAlign entegrasyonu (Nazor et al. 2019) donör-batch effekleri için altın standarttır ve Seurat integrate'ten üstün kabul edilir bazı kohortlarda.
+
+### Ekstra keşif — RORB+ vulnerable subcluster tanımlaması
+
+**Reason:** Leng makalesinde RORB+ vulnerable subpopulation'lar 'fine' subclustering ('s' suffix; 9 EC:Exc.s0-s8 subcluster) düzeyinde tanımlanmış. Broad clustering'de ('Exc.1-5') vulnerability sinyalleri bulanıklaşıyor.
+**Change:** `subclusterAssignment` (fine subclustering) kullanılıyor. Vulnerable RORB+ subcluster üçlüsü: EC:Exc.s1, EC:Exc.s2, EC:Exc.s4 (Leng et al. 2021, Fig. 2c). Bu üçü Braak 0'da yüksek RORB ifadesi gösterir ve Braak 2'de seçici olarak deplete olur.
+**Impact on primary analysis:** Stage 1 pseudo-bulk analizi bu üç subclusterda yapılacak. Non-vulnerable Exc subclusterlar (s0, s3, s5, s6, s7, s8) internal control olarak kullanılabilir.
+**Justification:** Leng makalesinin (Nature Neuroscience 2021) bulgu odağı bu üç subcluster; ayrı ele almak spesifisiteyi test etmek için gerekli.
