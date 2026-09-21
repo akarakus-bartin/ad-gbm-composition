@@ -1,171 +1,158 @@
 # ==============================================================================
 # 04_stage1_ad_signature.R
-# Purpose: Stage 1 - define AD-vulnerable RORB+ excitatory neuron signature
-# from Leng et al. 2021 snRNA-seq data (GSE147528).
+# Purpose: Stage 1 — define AD-vulnerable RORB+ excitatory neuron DE signature
+# from Leng et al. 2021 snRNA-seq data (GSE147528) via pseudobulk edgeR.
+#
 # Pre-specified in Analysis Plan Section 6.1.
-# Outputs:
-#   - ad_vulnerable_de_table (full edgeR results)
-#   - ad_vulnerable_signature (ranked gene list, down-regulated in AD)
+# Deviations documented in DEVIATIONS.md (2026-09-21 entry).
+#
+# Analysis design:
+#   Primary:     Braak 0 vs 2 (RORB+ depletion peak per Leng Fig 2c)
+#   Sensitivity: Braak 0 vs 6 (plan-conformant, late-AD control)
+#
+# Two models:
+#   Model A (pooled):     ~ 0 + braak_group + subcluster
+#                         Pooled DE across s1/s2/s4, subcluster as covariate.
+#                         Primary output for H2 convergence testing.
+#   Model B (per-cluster): DE within each subcluster separately.
+#                          Consistency check across s1/s2/s4.
+#
+# Note: subcluster names contain ":" which is not R-syntactic. We sanitise
+# via make.names() before building the design matrix so limma::makeContrasts
+# accepts the column names.
 # ==============================================================================
 
 source(here::here("R", "00_setup.R"))
 STAGE <- "stage1"
 
-leng <- load_intermediate("leng_seurat")
-
 # ------------------------------------------------------------------------------
-# 1. Subset: entorhinal cortex excitatory neurons only
+# Helper 1: aggregate SCE to pseudobulk (donor x subcluster) with min-cell filter
 # ------------------------------------------------------------------------------
-
-# Region filter (SFG reserved for sensitivity per Section 8.1)
-# NOTE: adapt column name to actual Leng metadata; typical column: "brain_region" or "region"
-region_col <- if ("brain_region" %in% colnames(leng@meta.data)) "brain_region" else "region"
-region_values <- leng[[region_col, drop = TRUE]]
-ec_cells <- names(region_values)[grepl(PARAMS$stage1$brain_region, tolower(region_values))]
-leng_ec <- subset(leng, cells = ec_cells)
-log_msg(STAGE, sprintf("EC cells: %d", ncol(leng_ec)))
-
-# Cell-type filter: excitatory neurons only
-# NOTE: adapt column name to actual Leng metadata; typical column: "cell_type" or "celltype"
-ct_col <- if ("cell_type" %in% colnames(leng_ec@meta.data)) "cell_type" else "celltype"
-ct_values <- leng_ec[[ct_col, drop = TRUE]]
-exc_cells <- names(ct_values)[grepl("excitatory|ExN|Exc", ct_values, ignore.case = TRUE)]
-leng_exc <- subset(leng_ec, cells = exc_cells)
-log_msg(STAGE, sprintf("EC excitatory neurons: %d", ncol(leng_exc)))
-
-# ------------------------------------------------------------------------------
-# 2. Define RORB-high subtype
-# ------------------------------------------------------------------------------
-
-if (!("RORB" %in% rownames(leng_exc))) {
-  stop("RORB not detected in Leng expression matrix. Check gene naming convention (Ensembl vs Symbol).")
+build_leng_pseudobulk <- function(sce, min_cells = 10) {
+  group_id <- paste(as.character(sce$SampleID),
+                    as.character(sce$subclusterAssignment), sep = "__")
+  agg <- scuttle::aggregateAcrossCells(sce, ids = group_id,
+                                        statistics = "sum",
+                                        use.assay.type = "counts")
+  n_cells <- as.integer(table(group_id)[colnames(agg)])
+  agg$n_cells <- n_cells
+  keep <- agg$n_cells >= min_cells
+  log_msg(STAGE, sprintf("Pseudobulk samples: %d total, %d pass min_cells=%d",
+                         ncol(agg), sum(keep), min_cells))
+  agg <- agg[, keep]
+  sample_meta <- data.frame(
+    sample_id           = colnames(agg),
+    donor               = as.character(agg$SampleID),
+    subcluster_original = as.character(agg$subclusterAssignment),
+    subcluster          = make.names(as.character(agg$subclusterAssignment)),
+    braak_stage         = as.character(agg$BraakStage),
+    n_cells             = agg$n_cells,
+    stringsAsFactors    = FALSE
+  )
+  list(counts = SummarizedExperiment::assay(agg, "counts"), meta = sample_meta)
 }
 
-rorb_expr <- FetchData(leng_exc, vars = "RORB")[, "RORB"]
-rorb_threshold <- quantile(rorb_expr[rorb_expr > 0], PARAMS$stage1$rorb_percentile)
-log_msg(STAGE, sprintf("RORB expression 75th percentile among RORB+ cells: %.3f", rorb_threshold))
-
-leng_exc$rorb_high <- rorb_expr >= rorb_threshold
-log_msg(STAGE, sprintf("RORB-high cells: %d (%.1f%%)",
-                       sum(leng_exc$rorb_high), 100 * mean(leng_exc$rorb_high)))
-
-leng_rorb <- subset(leng_exc, subset = rorb_high == TRUE)
-
 # ------------------------------------------------------------------------------
-# 3. Donor-level pseudobulk (sum counts per donor)
+# Helper 2: Model A pooled DE (Braak_test vs Braak_ref, subcluster covariate)
 # ------------------------------------------------------------------------------
-
-# NOTE: adapt donor column name
-donor_col <- if ("donor_id" %in% colnames(leng_rorb@meta.data)) "donor_id" else "sample_id"
-
-# Extract raw counts
-counts <- GetAssayData(leng_rorb, assay = "RNA", slot = "counts")
-donor <- leng_rorb[[donor_col, drop = TRUE]]
-
-# Pseudobulk: sum per donor
-donors <- unique(donor)
-pseudobulk <- sapply(donors, function(d) {
-  cells <- names(donor)[donor == d]
-  rowSums(counts[, cells, drop = FALSE])
-})
-colnames(pseudobulk) <- donors
-
-log_msg(STAGE, sprintf("Pseudobulk matrix: %d genes x %d donors", nrow(pseudobulk), ncol(pseudobulk)))
-
-# Donor metadata (one row per donor)
-donor_meta <- leng_rorb@meta.data %>%
-  as.data.frame() %>%
-  tibble::rownames_to_column("cell") %>%
-  group_by(!!sym(donor_col)) %>%
-  summarise(across(any_of(c("braak_stage", "diagnosis", "age", "sex")),
-                   ~ first(.x)),
-            n_cells = n(), .groups = "drop") %>%
-  as.data.frame()
-donor_meta <- donor_meta[match(colnames(pseudobulk), donor_meta[[donor_col]]), ]
-
-# ------------------------------------------------------------------------------
-# 4. Group assignment: Braak stage 0 (control) vs Braak stage VI (advanced AD)
-# ------------------------------------------------------------------------------
-
-braak_col <- "braak_stage"
-donor_meta$group <- case_when(
-  donor_meta[[braak_col]] %in% PARAMS$stage1$control_group_braak ~ "Control",
-  donor_meta[[braak_col]] %in% PARAMS$stage1$ad_group_braak ~ "AD",
-  TRUE ~ NA_character_
-)
-
-# Keep only Control and AD donors
-keep <- !is.na(donor_meta$group)
-donor_meta <- donor_meta[keep, ]
-pseudobulk <- pseudobulk[, donor_meta[[donor_col]]]
-
-n_ctrl <- sum(donor_meta$group == "Control")
-n_ad <- sum(donor_meta$group == "AD")
-log_msg(STAGE, sprintf("Donors: %d Control, %d AD", n_ctrl, n_ad))
-
-assert_that(n_ctrl >= PARAMS$stage1$min_donors_per_group,
-            sprintf("Too few Control donors (%d < %d)", n_ctrl, PARAMS$stage1$min_donors_per_group))
-assert_that(n_ad >= PARAMS$stage1$min_donors_per_group,
-            sprintf("Too few AD donors (%d < %d)", n_ad, PARAMS$stage1$min_donors_per_group))
-
-# ------------------------------------------------------------------------------
-# 5. edgeR differential expression
-# ------------------------------------------------------------------------------
-
-y <- DGEList(counts = pseudobulk, group = factor(donor_meta$group, levels = c("Control", "AD")))
-keep_genes <- filterByExpr(y)
-y <- y[keep_genes, , keep.lib.sizes = FALSE]
-log_msg(STAGE, sprintf("Genes after filterByExpr: %d", nrow(y)))
-
-y <- calcNormFactors(y, method = "TMM")
-
-# Design: group + covariates (age, sex if available)
-covariate_terms <- intersect(PARAMS$stage1$covariates, colnames(donor_meta))
-if (length(covariate_terms) > 0) {
-  # Only include covariates with variation
-  covariate_terms <- covariate_terms[sapply(covariate_terms, function(v) length(unique(donor_meta[[v]])) > 1)]
+run_edger_pooled <- function(counts, meta, braak_ref, braak_test) {
+  keep <- meta$braak_stage %in% c(braak_ref, braak_test)
+  counts_sub <- counts[, keep]
+  meta_sub <- meta[keep, , drop = FALSE]
+  meta_sub$braak_group <- factor(paste0("Braak", meta_sub$braak_stage),
+                                  levels = c(paste0("Braak", braak_ref),
+                                             paste0("Braak", braak_test)))
+  meta_sub$subcluster <- factor(meta_sub$subcluster)
+  design <- model.matrix(~ 0 + braak_group + subcluster, data = meta_sub)
+  y <- edgeR::DGEList(counts = counts_sub, samples = meta_sub)
+  keep_g <- edgeR::filterByExpr(y, design = design)
+  y <- y[keep_g, , keep.lib.sizes = FALSE]
+  y <- edgeR::calcNormFactors(y, method = "TMM")
+  y <- edgeR::estimateDisp(y, design = design, robust = TRUE)
+  fit <- edgeR::glmQLFit(y, design = design, robust = TRUE)
+  contrast_str <- sprintf("braak_groupBraak%s - braak_groupBraak%s",
+                          braak_test, braak_ref)
+  contrast <- limma::makeContrasts(contrasts = contrast_str, levels = design)
+  qlf <- edgeR::glmQLFTest(fit, contrast = contrast)
+  tt <- edgeR::topTags(qlf, n = Inf, sort.by = "none")$table
+  tt$gene <- rownames(tt)
+  tt <- tt[, c("gene", "logFC", "logCPM", "F", "PValue", "FDR")]
+  tt <- tt[order(tt$PValue), ]
+  log_msg(STAGE, sprintf("Model A [Braak %s vs %s]: %d genes, %d FDR<0.05",
+                         braak_ref, braak_test, nrow(tt),
+                         sum(tt$FDR < 0.05, na.rm = TRUE)))
+  list(de_table = tt, n_samples = ncol(counts_sub),
+       n_donors_ref  = length(unique(meta_sub$donor[meta_sub$braak_stage == braak_ref])),
+       n_donors_test = length(unique(meta_sub$donor[meta_sub$braak_stage == braak_test])),
+       contrast = contrast_str)
 }
-design_formula <- as.formula(paste("~", paste(c("group", covariate_terms), collapse = " + ")))
-design <- model.matrix(design_formula, data = donor_meta)
-log_msg(STAGE, sprintf("Design formula: %s", deparse(design_formula)))
-
-y <- estimateDisp(y, design)
-fit <- glmQLFit(y, design)
-qlf <- glmQLFTest(fit, coef = "groupAD")
-
-de_table <- topTags(qlf, n = Inf, sort.by = "PValue")$table %>%
-  tibble::rownames_to_column("gene") %>%
-  as_tibble()
-
-log_msg(STAGE, sprintf("DE genes at FDR<%.2f: %d",
-                       PARAMS$stage1$de_fdr_threshold,
-                       sum(de_table$FDR < PARAMS$stage1$de_fdr_threshold)))
 
 # ------------------------------------------------------------------------------
-# 6. Define AD-vulnerable neuron down-regulated signature
+# Helper 3: Model B per-subcluster DE
 # ------------------------------------------------------------------------------
+run_edger_per_subcluster <- function(counts, meta, braak_ref, braak_test, subclusters) {
+  results <- list()
+  for (sc in subclusters) {
+    keep <- meta$subcluster == sc & meta$braak_stage %in% c(braak_ref, braak_test)
+    if (sum(keep) < 4) {
+      log_msg(STAGE, sprintf("  %s: skipped (only %d samples)", sc, sum(keep)))
+      next
+    }
+    counts_sub <- counts[, keep]
+    meta_sub <- meta[keep, , drop = FALSE]
+    meta_sub$braak_group <- factor(paste0("Braak", meta_sub$braak_stage),
+                                    levels = c(paste0("Braak", braak_ref),
+                                               paste0("Braak", braak_test)))
+    design <- model.matrix(~ braak_group, data = meta_sub)
+    y <- edgeR::DGEList(counts = counts_sub, samples = meta_sub)
+    keep_g <- edgeR::filterByExpr(y, design = design)
+    y <- y[keep_g, , keep.lib.sizes = FALSE]
+    y <- edgeR::calcNormFactors(y, method = "TMM")
+    y <- edgeR::estimateDisp(y, design = design, robust = TRUE)
+    fit <- edgeR::glmQLFit(y, design = design, robust = TRUE)
+    qlf <- edgeR::glmQLFTest(fit, coef = 2)
+    tt <- edgeR::topTags(qlf, n = Inf, sort.by = "none")$table
+    tt$gene <- rownames(tt)
+    tt <- tt[, c("gene", "logFC", "logCPM", "F", "PValue", "FDR")]
+    tt <- tt[order(tt$PValue), ]
+    log_msg(STAGE, sprintf("  %s (n=%d): %d genes, %d FDR<0.05",
+                            sc, ncol(counts_sub), nrow(tt),
+                            sum(tt$FDR < 0.05, na.rm = TRUE)))
+    results[[sc]] <- tt
+  }
+  results
+}
 
-signature <- de_table %>%
-  filter(FDR < PARAMS$stage1$de_fdr_threshold,
-         logFC < PARAMS$stage1$de_log2fc_threshold) %>%
-  arrange(logFC) %>%
-  mutate(rank = row_number())
+# ==============================================================================
+# Main pipeline
+# ==============================================================================
 
-log_msg(STAGE, sprintf("AD-vulnerable signature: %d down-regulated genes", nrow(signature)))
-log_msg(STAGE, sprintf("Top 10: %s", paste(head(signature$gene, 10), collapse = ", ")))
+leng <- load_intermediate("leng_processed")
+assert_that(!is.null(leng$sce_vulnerable), "leng_processed missing sce_vulnerable")
+log_msg(STAGE, sprintf("Loaded Leng vulnerable subset: %d cells x %d genes",
+                       ncol(leng$sce_vulnerable), nrow(leng$sce_vulnerable)))
 
-# ------------------------------------------------------------------------------
-# 7. Save outputs
-# ------------------------------------------------------------------------------
+min_cells <- if (!is.null(PARAMS$leng$min_cells_per_pseudobulk)) PARAMS$leng$min_cells_per_pseudobulk else 10
+pb <- build_leng_pseudobulk(leng$sce_vulnerable, min_cells = min_cells)
+log_msg(STAGE, sprintf("Pseudobulk matrix: %d genes x %d samples",
+                       nrow(pb$counts), ncol(pb$counts)))
+log_msg(STAGE, sprintf("Braak distribution: %s",
+                       paste(names(table(pb$meta$braak_stage)),
+                             table(pb$meta$braak_stage), sep = "=", collapse = ", ")))
+save_intermediate(pb, "leng_pseudobulk")
 
-save_intermediate(list(de_table = de_table,
-                       signature = signature,
-                       n_donors = c(control = n_ctrl, ad = n_ad),
-                       rorb_threshold = rorb_threshold),
-                  "stage1_ad_vulnerable")
+log_msg(STAGE, "=== Model A (pooled, subcluster covariate) ===")
+log_msg(STAGE, "Primary contrast: Braak 0 vs 2")
+deg_primary <- run_edger_pooled(pb$counts, pb$meta, "0", "2")
+save_intermediate(deg_primary, "leng_deg_primary")
 
-# Also write the signature as a TSV for easy inspection
-write_tsv(signature, here::here(PARAMS$paths$intermediate, "stage1_signature.tsv"))
+log_msg(STAGE, "Sensitivity contrast: Braak 0 vs 6")
+deg_sensitivity <- run_edger_pooled(pb$counts, pb$meta, "0", "6")
+save_intermediate(deg_sensitivity, "leng_deg_sensitivity")
 
-snapshot_session(STAGE)
+log_msg(STAGE, "=== Model B (per-subcluster, Braak 0 vs 2) ===")
+vuln_sc <- make.names(leng$vulnerable_subclusters)
+deg_per_sc <- run_edger_per_subcluster(pb$counts, pb$meta, "0", "2", vuln_sc)
+save_intermediate(deg_per_sc, "leng_deg_per_subcluster")
+
 log_msg(STAGE, "Stage 1 complete.")
