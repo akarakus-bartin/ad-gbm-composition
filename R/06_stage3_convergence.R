@@ -32,30 +32,30 @@ ad_de <- ad$de_table %>% filter(gene %in% shared_universe)
 gbm_de <- gbm$de_table %>% filter(gene %in% shared_universe)
 
 # ------------------------------------------------------------------------------
-# TODO (yarına): Sign convention audit gerekli.
-# Yorumlar H2a (discordant) beklerken kod concordant (both UP or both DOWN)
-# konvergensi test ediyor. Manuel 4-quadrant analiz (stage3_quadrant_analysis.rds)
-# gerçek sinyalin DD (both DOWN, novel) yönünde olduğunu ortaya çıkardı.
-# Yeniden yazım için: DEVIATIONS.md 2026-09-21 Stage 3 keşif entry'sine bak.
-
 # 2. Test 1 (RRHO2): rank-rank hypergeometric overlap
 # ------------------------------------------------------------------------------
-# Sign convention:
-#   - AD: DOWN in AD => negative logFC => want low rank when sorted by signed -log10(P) ascending
-#   - GBM: UP in neural-lineage => positive logFC => want low rank when sorted by signed -log10(P) descending
-# We test concordant enrichment: (AD-down) AND (GBM-up).
+# Sign convention (VERIFIED post-hoc):
+#   Both AD and GBM lists sorted DESC by signed_logP (from most UP to most DOWN).
+#   RRHO2 default behavior tests CONCORDANT overlap:
+#     - Top-left = both UP (concordant UP)
+#     - Bottom-right = both DOWN (concordant DOWN)
+#   The strongest signal was found in bottom-right (DD quadrant), NOT in the
+#   pre-specified H2a direction (AD DOWN x GBM UP, bottom-left).
+#   See stage3_quadrant_analysis.rds for full 4-quadrant breakdown.
+#   H2a partial support (DU quadrant): 18 genes, p=0.014 (borderline).
+#   Novel finding (DD quadrant): 20 genes, p=0.003 (metabolic-stress axis).
 
 # Signed -log10 P (positive if logFC positive)
 ad_ranks <- ad_de %>%
   mutate(signed_logP = -log10(PValue) * sign(logFC)) %>%
   arrange(desc(signed_logP)) %>%          # from most UP to most DOWN
-  select(gene, signed_logP) %>%
+  dplyr::select(gene, signed_logP) %>%
   as.data.frame()
 
 gbm_ranks <- gbm_de %>%
   mutate(signed_logP = -log10(PValue) * sign(logFC)) %>%
   arrange(desc(signed_logP)) %>%
-  select(gene, signed_logP) %>%
+  dplyr::select(gene, signed_logP) %>%
   as.data.frame()
 
 # Align to identical order (RRHO2 requires two ranked lists with same gene set)
@@ -256,4 +256,78 @@ summary_lines <- c(
 writeLines(summary_lines, here::here(PARAMS$paths$intermediate, "stage3_H2_decision.txt"))
 
 snapshot_session(STAGE)
+
+# ==============================================================================
+# POST-HOC: 4-quadrant analysis (added 2026-09-22)
+# ==============================================================================
+# Manual verification of RRHO2 signal via top-N rank-based quadrant overlap.
+# Complements pre-specified 3-test decision by providing directional interpretation.
+# Full details in DEVIATIONS.md (2026-09-21 Stage 3 discovery entry).
+
+log_msg(STAGE, "Running post-hoc 4-quadrant analysis...")
+
+N_top <- PARAMS$stage3$top_n_hypergeometric  # same as pre-specified (200)
+merged_de <- merge(
+  ad_de %>% mutate(ad_signed = -log10(PValue) * sign(logFC)) %>% 
+    dplyr::select(gene, ad_logFC = logFC, ad_FDR = FDR, ad_signed),
+  gbm_de %>% mutate(gbm_signed = -log10(PValue) * sign(logFC)) %>% 
+    dplyr::select(gene, gbm_logFC = logFC, gbm_FDR = FDR, gbm_signed),
+  by = "gene"
+)
+
+ad_top_up <- merged_de %>% arrange(desc(ad_signed)) %>% head(N_top) %>% pull(gene)
+ad_top_dn <- merged_de %>% arrange(ad_signed)       %>% head(N_top) %>% pull(gene)
+gbm_top_up <- merged_de %>% arrange(desc(gbm_signed)) %>% head(N_top) %>% pull(gene)
+gbm_top_dn <- merged_de %>% arrange(gbm_signed)       %>% head(N_top) %>% pull(gene)
+
+N_total <- nrow(merged_de)
+exp_by_chance <- N_top * N_top / N_total
+
+quadrants <- list(
+  UU_concordant_UP     = list(genes = intersect(ad_top_up, gbm_top_up),
+                              ad_direction = "UP",   gbm_direction = "UP"),
+  UD_discordant        = list(genes = intersect(ad_top_up, gbm_top_dn),
+                              ad_direction = "UP",   gbm_direction = "DOWN"),
+  DU_H2a_discordant    = list(genes = intersect(ad_top_dn, gbm_top_up),
+                              ad_direction = "DOWN", gbm_direction = "UP"),
+  DD_concordant_DOWN   = list(genes = intersect(ad_top_dn, gbm_top_dn),
+                              ad_direction = "DOWN", gbm_direction = "DOWN")
+)
+
+for (name in names(quadrants)) {
+  q <- quadrants[[name]]
+  n_obs <- length(q$genes)
+  quadrants[[name]]$n_observed <- n_obs
+  quadrants[[name]]$expected   <- exp_by_chance
+  quadrants[[name]]$enrichment <- n_obs / exp_by_chance
+  quadrants[[name]]$p_hyper    <- phyper(n_obs - 1, N_top, N_total - N_top, N_top,
+                                          lower.tail = FALSE)
+  quadrants[[name]]$gene_detail <- merged_de[merged_de$gene %in% q$genes,
+    c("gene", "ad_logFC", "ad_FDR", "gbm_logFC", "gbm_FDR")]
+}
+
+quadrant_analysis <- list(
+  method = "Top-N rank-based 4-quadrant overlap (post-hoc extension of Stage 3)",
+  N_top = N_top,
+  N_total = N_total,
+  merged_data = merged_de,
+  quadrants = quadrants,
+  global_correlation = list(
+    spearman = cor(merged_de$ad_signed, merged_de$gbm_signed, method = "spearman"),
+    pearson  = cor(merged_de$ad_signed, merged_de$gbm_signed, method = "pearson")
+  ),
+  summary_table = data.frame(
+    quadrant = c("UU (both UP)", "UD (AD UP x GBM DOWN)", 
+                 "DU (AD DOWN x GBM UP) [H2a]", "DD (both DOWN) [novel]"),
+    n_overlap = sapply(quadrants, function(x) x$n_observed),
+    enrichment = sapply(quadrants, function(x) x$enrichment),
+    p_hyper = sapply(quadrants, function(x) x$p_hyper),
+    stringsAsFactors = FALSE
+  )
+)
+
+save_intermediate(quadrant_analysis, "stage3_quadrant_analysis")
+log_msg(STAGE, "4-quadrant summary:")
+print(quadrant_analysis$summary_table)
+
 log_msg(STAGE, "Stage 3 complete.")

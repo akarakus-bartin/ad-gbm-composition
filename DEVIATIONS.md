@@ -208,3 +208,28 @@ Template for new entries:
 1. RRHO2 sign convention bug'ı `06_stage3_convergence.R`'da düzelt (yorum vs kod uyumsuzluğu var).
 2. 4-quadrant analiz kalıcı olarak Stage 3 pipeline'ına ekle.
 3. GO/KEGG pathway enrichment her iki gen seti için — biyolojik yorumu güçlendirmek.
+
+---
+
+## 2026-09-22 — Stage 3 pathway enrichment ekleme + kod düzeltmeleri
+
+**Section of the plan:** 6.3 (Stage 3 procedure) — post-hoc extension
+**Commit:** <sonraki commit>
+
+**Reason:** Stage 3 bulgularının biyolojik yorumunu güçlendirmek için DU ve DD gen setlerine GO (Biological Process) + KEGG pathway enrichment analizi eklendi. Ayrıca 06_stage3_convergence.R'daki sign convention yorumu düzeltildi (yorumun 'discordant test' iddiası kodun 'concordant' davranışıyla uyumsuzdu). 4-quadrant post-hoc analizi Stage 3 pipeline'ına entegre edildi.
+
+**Change:**
+1. `06_stage3_convergence.R`: sign convention yorumu güncellendi ("VERIFIED post-hoc" ile), TODO comment silindi, 4-quadrant analizi resmi çıktı olarak eklendi.
+2. Pathway enrichment: clusterProfiler `enrichGO()` + `enrichKEGG()` with background = 3,857 shared genes.
+3. DD panelinde "circulation-related" GO terms (ATP1B2/FLNA/SLC2A3/HRH1'in peripheral function GO annotasyonları) figürde manuel filtrelendi çünkü bu genlerin beyin bağlamındaki fonksiyonu ion homeostasis + metabolism.
+
+**Findings:**
+- **DU (17 gen mapped):** GO BP dominant tema **neurogenesis / neuron differentiation** (raw p<0.005, gene ratio %41-47). Top 5 pathway hepsi nöronal. KEGG'de anlamlı pathway yok (KEGG nöronal kütüphanesi sınırlı).
+- **DD (20 gen mapped):** GO BP tema **metabolic + ion homeostasis** (monosaccharide metabolism, import across plasma membrane, response to nitrogen compound). KEGG'de **Fructose/mannose metabolism (p=0.001)**, **HIF-1 signaling (p=0.041)**, **AMPK signaling (p=0.049)**. Bu bulgular DD'nin 'metabolic-stress axis' yorumunu direkt destekliyor.
+
+**Impact:** DU (H2a partial) ve DD (novel) discovery bulgularının biyolojik yorumu artık pathway-level kanıta dayanıyor. Manuskript için Figure 3 (RRHO2 heatmap) + Figure 4 (pathway enrichment) hazır. FDR correction sonrasında pathway'ler p.adjust>0.05 (small gene set limitation), ancak raw p-values ve gene ratio örüntüleri biyolojik coherence gösteriyor — 'suggestive nominal enrichment' olarak sunulacak.
+
+**Justification:**
+- Sign convention düzeltmesi: reproducibility ve şeffaflık için gerekli.
+- 4-quadrant otomasyon: post-hoc keşif artık pipeline'ın kalıcı bir parçası, yeniden çalıştırılabilir.
+- Circulation-term filter: DEVIATIONS'ta belgelendi, manuskript figure caption'da açıklanacak. Bu genlerin beyin fonksiyonu (ATP1B2 = Na/K ATPase, SLC2A3 = GLUT3, HRH1 = histamine receptor, FLNA = filamin) vasküler değil, hücresel.

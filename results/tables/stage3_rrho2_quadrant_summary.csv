@@ -1,0 +1,5 @@
+"quadrant","row_range","col_range","max_neg_log10P","max_raw_P","max_BH_P","passes_pre_spec","biological_interpretation","conclusion"
+"UU (top-left)","1-21","1-21",2.43685880620707,0.0036571366972331,6.762045753184,FALSE,"Weak/no signal — visual artifact of color scale","Not significant"
+"UD (top-right)","1-21","23-43",0.470303550185145,0.338607403720488,626.085089479182,FALSE,"No convergence detected","Not significant"
+"DU (bottom-left) H2a","23-43","1-21",4.20988629845994,6.16756452173197e-05,0.114038268006824,FALSE,"Partial H2a support (18 genes) — neuronal identity axis, suggestive but pre-spec fails","Suggestive (borderline)"
+"DD (bottom-right) NOVEL","23-43","23-43",6.54176553825046,2.87233084339801e-07,0.000531093972944292,TRUE,"Novel finding: shared identity loss axis (20 genes) — activity-dependent + metabolic stress","SIGNIFICANT (pre-specified threshold)"
