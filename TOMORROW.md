@@ -98,3 +98,18 @@ Toplam 4 gün: 20+ commit, 3 major aşama, 2 validation cohort
 Yarın hafif başla — manuscript writing farklı bir zihniyet gerektirir.
 3-4 saat aktif yazım idealdir.
 
+
+---
+
+## Ek not (2026-09-22 gece):
+
+### Figürler mevcut (draft quality)
+- Figure 5 (AD dose-response) ve Figure 6 (cross-disease scatter) oluşturuldu
+- Küçük label overlap sorunları var — 10-15 dk refinement gerekli
+- Manuscript writing sırasında düzeltilebilir
+
+### Yarın için figürlerin son hali:
+- Figure 6 quadrant annotations reposition
+- Width 9 → 11 arttır (spacing için)
+- Font boyutları publication ready
+

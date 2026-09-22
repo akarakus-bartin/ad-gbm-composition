@@ -339,3 +339,31 @@ Also performed with TCGA-GBM 5 internal solid-tissue normals — similar directi
 1. Category-specific GO/KEGG enrichment (biology'yi formalize et)
 2. Manuscript writing başlangıç: Introduction + Methods draft
 3. Manuscript Figure 5 candidate: 3-category scatter plot (AD logFC vs GBM logFC)
+
+---
+
+## 2026-09-22 (evening) — Figures 5 & 6 created (draft quality)
+
+**Figures created:**
+- results/figures/stage4_ad_dose_response.pdf (Figure 5)
+  - Grouped bar plot: 20 DD genes × 2 comparisons (All AD vs Advanced AD)
+  - Faceted by Group A (neuronal-loss, 14 genes) and Group B (glial-stress, 6 genes)
+  - Subtitle: Wilcoxon p=1.3e-5
+
+- results/figures/stage4_cross_disease_scatter.pdf (Figure 6, MAIN)
+  - Scatter: AD log2FC (Advanced vs Ctrl) × GBM log2FC (TCGA vs GTEx cortex)
+  - 20 DD genes colored by 3 categories (neuronal_loss / stress_shared / divergent)
+  - Regression line + confidence interval + diagonal reference
+  - Subtitle: Spearman ρ=0.713, Pearson r=0.665
+
+**Known minor issues (deferred to next day):**
+- Figure 6: quadrant annotations overlap with gene labels (FLNA / NRN1 areas)
+- Width/spacing could be increased for publication-quality submission
+- Both figures are draft quality — refinement planned for manuscript writing stage
+
+**Manuscript figure inventory (current 5 PDFs):**
+1. stage3_rrho2_heatmap.pdf (Supplementary)
+2. stage3_rrho2_heatmap_annotated.pdf (Figure 3)
+3. stage3_pathway_enrichment.pdf (Figure 4)
+4. stage4_ad_dose_response.pdf (Figure 5)
+5. stage4_cross_disease_scatter.pdf (Figure 6, MAIN)
