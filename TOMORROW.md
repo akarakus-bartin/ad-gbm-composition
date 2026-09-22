@@ -1,89 +1,100 @@
-# TOMORROW.md — 2026-09-23 Plan (Stage 4 devam: GBM validation)
+# TOMORROW.md — 2026-09-23 Plan (manuscript writing başlangıcı)
 
-**Son commit:** <bugünkü commit>
+**Son commit:** <bugünkü ikinci commit>
 **Bugün (2026-09-22) tamamlananlar:**
-- Stage 3 v2 kod hijyeni + pathway enrichment + RRHO2 heatmap ✓
-- Synapse Certified User (yedek, kullanılmadı) ✓
-- recount3 pipeline kurulu ✓
-- Stage 4 AD validation TAMAMLANDI (GSE125583 / SRP181886, n=289)
-- **Dose-response bulgusu: 17/20 gen daha ekstrem in Advanced AD, Wilcoxon p=1.3e-5**
-- İki alt-grup keşfi: Neuronal-loss (14) + Glial-stress (6)
+
+### Sabah (Stage 3 v2 + AD validation)
+- Stage 3 v2 kod hijyeni + pathway enrichment + RRHO2 heatmap
+- AD validation: GSE125583 (n=289), dose-response Wilcoxon p=1.3e-5
+
+### Akşam (GBM validation)
+- TCGA-GBM (n=157) vs GTEx cortex (n=510)
+- **Spearman ρ = 0.713, p = 4.2e-4** — güçlü cross-disease concordance
+- **3 kategori discovery:**
+  - Neuronal loss shared (6 gen)
+  - Stress shared (6 gen)
+  - Divergent (8 gen — tumor-specific)
 
 ---
 
-## Yarın için ana görev — Stage 4 GBM validation
+## Manuscript için elimizdeki yapı
 
-### Ana hipotez
-DD signature GBM'de de reproducible mi? Beklenen:
-- Group A (nöronal) → GBM'de DOWN (Neftel Stage 2 ile uyumlu)
-- Group B (glial-stress) → GBM'de UP? (reactive glia-like ama tumor context)
+### Stage 1 (Leng AD snRNA-seq)
+- 486 FDR<0.05 vulnerable neuron signature
 
-### Öncelikli veri kaynakları
+### Stage 2 (Neftel GBM snRNA-seq)
+- 1,576 FDR<0.05 neural-mimicry signature
 
-1. **recount3 içindeki GBM cohortları (öncelik)** — açık, standardize, ideal
-   - TCGA-GBM recount3'te var: `available_projects()` kontrol
-   - CGGA: recount3 içinde olmayabilir, alternatif indirme gerek
+### Stage 3 (Cross-disease convergence)
+- H2 formally REJECTED (1/3 pre-specified test)
+- DU (H2a partial): 18 genes, neurogenesis-enriched
+- **DD (novel): 20 genes, HIF-1/AMPK/glycolysis KEGG**
 
-2. **GSE108474 (REMBRANDT)** — GEO açık, ~500 sample, brain cancer + normal
-   - Yedek seçenek
+### Stage 4 AD validation
+- Direction check: 13/20 DOWN (65%)
+- **Dose-response: 17/20 more extreme in Braak V-VI (Wilcoxon p=1.3e-5)**
+- İki alt-grup: neuronal-loss (14) + glial-stress (6)
 
-### Metodoloji
-AD tarafındaki analiz aynen tekrarlanacak:
-- 20 DD gen'i çek (aynı ENSEMBL ID'ler)
-- CPM normalize
-- GBM tumor vs normal brain karşılaştırması
-- Direction check + dose-response (WHO grade ile stratify)
-- Group A / Group B ayrı analiz
-
-### Beklenen süreçler
-- Veri indirme + preprocessing: ~1 saat
-- Direction analiz: ~30 dk
-- Dose-response (WHO grade II/III/IV): ~30 dk
-- Kayıt + grafik: ~30 dk
-- **Toplam: 2-3 saat**
+### Stage 4 GBM validation
+- **Cross-disease Spearman ρ=0.713 (p=4.2e-4)**
+- **3 kategori:** Neuronal loss (6) + Stress shared (6) + Divergent (8)
 
 ---
 
-## AD validation bulgusu özeti (referans)
+## Yarın için öncelikli görevler
 
-### Sample özeti
-- GSE125583 / SRP181886, fusiform gyrus, RNA-seq (recount3)
-- 219 AD + 70 control
-- Braak stratification: I-III (early), V-VI (advanced)
+### Öncelik 1 — Manuscript writing başlangıcı (2-3 saat)
 
-### Ana istatistikler
-- Direction check: 13/20 DOWN (65%), binomial p=0.13 (nominal)
-- Advanced AD: 14/20 DOWN (70%), binomial p=0.058 (borderline)
-- **Dose-response: 17/20 gen daha ekstrem in Advanced AD**
-  - Binomial p = 0.0013
-  - Wilcoxon signed-rank p = 1.3e-05
-- Group A (neuronal, 14 gen): +17.6% magnitude
-- Group B (glial-stress, 6 gen): +25.4% magnitude
+**Öncelik 1a: Introduction draft (~1 saat)**
+- AD-GBM cross-disease context (neuronal-glial biology overlap)
+- Cellular reprogramming hypothesis in both diseases
+- Existing literature: Neftel 2019, Leng 2021, Mathys 2019
+- Gap: cross-disease transcriptomic convergence tested
 
-### İki alt-grup
-- **Group A (neuronal-loss, 14 gen DOWN):** NRN1, PNMA2, OLFM1, IDS, ALDOA, HRH1, BAIAP2, ATP1B2, UBC, PPP2CB, PEA15, SLC2A3, CANX
-- **Group B (glial-stress, 6 gen UP):** JUNB, CEBPD, ZFP36L1, PER1, FLNA, PFKFB3
+**Öncelik 1b: Methods draft (~1-1.5 saat)**
+- Stage 1-4 methodology özet
+- Statistical tests, thresholds
+- Reproducibility statements (git repo, pre-registration)
 
----
+### Öncelik 2 — Ana figure hazırlığı (1-2 saat)
 
-## Manuskript güncelleme — güç kazanımı
+**Figure 5 — Cross-disease scatter plot:**
+- x-axis: AD logFC (advanced vs control)
+- y-axis: GBM logFC (tumor vs GTEx)
+- Points: 20 DD genes, colored by 3 categories
+- Diagonal + quadrants
+- Spearman ρ annotation
 
-### Önceki tahmin (Stage 3 sonrası)
-IF 5-10 hedef
-
-### Şimdiki tahmin (Stage 4 AD validation sonrası)
-IF 8-12 hedef — çünkü:
-- Discovery (Stage 3) + Validation (Stage 4 AD) mevcut
-- Wilcoxon p=1.3e-5 hakem gözünde güçlü kanıt
-- Cell-composition confounding indirect kanıt (H1 dolaylı destek)
-- İki alt-grup keşfi manuscript'i daha derin yapıyor
-
-GBM validation eklendiğinde IF potansiyeli daha da artabilir.
+### Öncelik 3 (opsiyonel) — Category-specific enrichment
+- 3 kategori için GO/KEGG
+- Tümor-specific divergent genlerin pathway'i (Warburg + proliferation confirmation)
 
 ---
 
-## Enerji notu
+## Manuscript hedef dergiler (revised)
 
-Bugün ~5.5 saat aktif çalışıldı — yoğun ama verimli.
-Yarın 3-4 saat yeterli (GBM validation daha rutin, AD paradigm'i tekrarla).
+Şu anki elimizdeki veri seti ile:
+
+**Primary target:**
+- **Briefings in Bioinformatics (IF ~9.5)** — methodology + discovery + validation hikayesi
+- Kabul olasılığı: %40-55 (Spearman 0.713 güçlü kanıt)
+
+**Secondary target:**
+- **Genes & Diseases (IF ~7.1)** — biology-focused reviewers
+- **NPJ Genomic Medicine (IF ~6.7)** — Nature portfolio, open access
+- Kabul olasılığı: %55-70
+
+**Safety net:**
+- **BMC Medical Genomics (IF ~2.8)** — güvenli, kabul olasılığı yüksek
+- **Neuroinformatics (IF ~3.9)** — methodology değer görür
+
+---
+
+## Enerji ve tempo
+
+Bugün ~8 saat aktif çalışıldı (sabah 5.5 + akşam 2.5)
+Toplam 4 gün: 20+ commit, 3 major aşama, 2 validation cohort
+
+Yarın hafif başla — manuscript writing farklı bir zihniyet gerektirir.
+3-4 saat aktif yazım idealdir.
 
