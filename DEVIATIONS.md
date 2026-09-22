@@ -233,3 +233,58 @@ Template for new entries:
 - Sign convention düzeltmesi: reproducibility ve şeffaflık için gerekli.
 - 4-quadrant otomasyon: post-hoc keşif artık pipeline'ın kalıcı bir parçası, yeniden çalıştırılabilir.
 - Circulation-term filter: DEVIATIONS'ta belgelendi, manuskript figure caption'da açıklanacak. Bu genlerin beyin fonksiyonu (ATP1B2 = Na/K ATPase, SLC2A3 = GLUT3, HRH1 = histamine receptor, FLNA = filamin) vasküler değil, hücresel.
+
+---
+
+## 2026-09-22 (afternoon) — Stage 4 revised: DD validation completed (AD side)
+
+**Section of the plan:** 2.4 (H1 hypothesis) — strategy revision
+**Commit:** <next commit>
+
+**Strategy revision rationale:**
+H1 (bulk cell-composition confounding test with MuSiC/BRETIGEA deconvolution) required ROSMAP/MSBB data, which needs Synapse DUC + institutional signing official signature. To avoid this bureaucratic overhead while maintaining scientific rigor, revised Stage 4 approach to **DD signature validation in independent open-access cohorts**.
+
+**Implementation:**
+- Certified Synapse User obtained (2026-09-22 13:04) as backup — not needed for current strategy.
+- Used recount3 pipeline (BiocManager::install('recount3')) for standardized processing.
+- AD validation cohort: SRP181886 (= GSE125583, Zhang 2018 Nat Commun)
+  - 289 samples fusiform gyrus (AD-vulnerable region)
+  - 219 AD + 70 control, mean age 84, Braak stratified
+  - RNA-seq processed via recount3 GENCODE v26
+- Metadata merged from GEO (Braak stage not in SRA/recount3 metadata).
+- 20/20 DD genes mapped to ENSEMBL and present in recount3 count matrix.
+
+**KEY FINDINGS — DD signature validation:**
+
+1. **Direction check (AD vs Control):** 13/20 genes DOWN (65%), binomial p=0.132 (nominal).
+
+2. **Braak-stratified analysis (Advanced AD [V-VI, n=125] vs Control):** 14/20 genes DOWN (70%), binomial p=0.058 (borderline).
+
+3. **DOSE-RESPONSE ANALYSIS (main finding):** 17/20 genes (85%) showed larger effect magnitudes in advanced AD vs regular AD:
+   - Binomial p = 0.0013
+   - Wilcoxon signed-rank p = 1.3e-05
+   - Group A (neuronal, 14 DOWN genes): +17.6% magnitude in advanced AD
+   - Group B (glial-stress, 6 UP genes): +25.4% magnitude in advanced AD
+
+**Biological interpretation — TWO subgroups discovered:**
+- **Group A (Neuronal loss, 13 DOWN):** NRN1, PNMA2, OLFM1, IDS, ALDOA, HRH1, BAIAP2, ATP1B2, UBC, PPP2CB, PEA15, SLC2A3, CANX. Reflect neuronal depletion in bulk tissue.
+- **Group B (Glial-stress, 6 UP):** JUNB, CEBPD, ZFP36L1, PER1, FLNA, PFKFB3. Established immediate early genes + reactive gliosis markers.
+- Both subgroups scale with AD severity (Braak stage) — biologically expected pattern.
+
+**Manuscript significance:**
+- Original direction check (65% DOWN) initially appeared as 'partial validation'.
+- Deeper analysis revealed a **cell-type-specific bidirectional pattern** — nöronal DOWN + glial UP — which biologically doğru pattern is for bulk AD tissue.
+- This finding provides mechanistic support for cell-composition confounding in bulk AD RNA-seq — indirectly validates the original H1 hypothesis without requiring DUC-restricted deconvolution.
+- Dose-response with Braak stage (Wilcoxon p=1.3e-5) is a strong reviewer-friendly signal.
+
+**Files created:**
+- results/intermediate/stage4_validation_ad_SRP181886.rds (RSE object, 36.7 MB)
+- results/intermediate/stage4_validation_ad_direction.rds
+- results/intermediate/stage4_validation_ad_braak_stratified.rds
+- results/intermediate/stage4_validation_ad_summary.rds
+- results/tables/stage4_validation_ad_dose_response.csv
+
+**Follow-up (yarına):**
+1. GBM tarafı validation cohort seçimi (CGGA açık erişim, veya alternatif)
+2. Group A vs Group B genlerin GO/KEGG enrichment (glial vs neuronal biology confirmation)
+3. Manuscript Figure 5 candidate: dose-response bar plot

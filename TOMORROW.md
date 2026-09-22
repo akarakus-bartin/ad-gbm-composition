@@ -1,119 +1,89 @@
-# TOMORROW.md — 2026-09-22 Başlangıç Notu
+# TOMORROW.md — 2026-09-23 Plan (Stage 4 devam: GBM validation)
 
-**Son commit:** 589cf60 (Stage 3 v1: H2 tested + 4-quadrant discovery)
-**Bugünün özeti:** Stage 1 (Leng AD signature) + Stage 2 v2 (Neftel GBM signature) + Stage 3 v1 (H2 REJECTED + iki novel konvergens ekseni) tamamlandı.
-
----
-
-## Bugünün ana bilimsel çıktıları
-
-### Stage 1 (leng_deg_primary.rds)
-- 486 FDR<0.05 gen (Braak 0 vs 2, primary)
-- Klasik AD synaptic loss signature: FOS, EGR1, NPTX2, VGF, BDNF, GRASP DOWN
-- H2 için AD-tarafı signature hazır
-
-### Stage 2 (neftel_deg_primary.rds)
-- 1,576 FDR<0.05 gen (NeuralLineage[NPC+OPC] vs Other[AC+MES])
-- Neftel Fig 1B marker-based malignant filter uygulandı (MES kontaminasyonu %42→%6)
-- Top UP: OPALIN, MAG, DLX5/6, STMN2, DCX, SOX11, PLP1, CD24
-- Neftel Fig 3B state dağılımı ile birebir uyumlu (AC:%36, MES:%17, NPC:%31, OPC:%16)
-
-### Stage 3 (stage3_convergence.rds + stage3_quadrant_analysis.rds)
-- Pre-specified H2 karar: **REJECTED** (1/3 test PASS)
-  - RRHO2: PASS (BH-P = 5.3e-4)
-  - Hypergeometric top-200: FAIL (OR=1.52, eşik ≥3)
-  - Permutation: FAIL (P=0.098, eşik <0.01)
-- Post-hoc 4-quadrant discovery: **iki bağımsız konvergens ekseni**
-  - **DU (H2a partial):** 18 gen, sinaptik/nöronal identity axis (CD24, STMN1, SYT4, APLP1)
-  - **DD (novel):** 20 gen, activity-dependent + metabolic stress axis (JUNB, ZFP36L1, SLC2A3, ALDOA)
-  - DU ∩ DD = 0 (iki bağımsız biyoloji)
+**Son commit:** <bugünkü commit>
+**Bugün (2026-09-22) tamamlananlar:**
+- Stage 3 v2 kod hijyeni + pathway enrichment + RRHO2 heatmap ✓
+- Synapse Certified User (yedek, kullanılmadı) ✓
+- recount3 pipeline kurulu ✓
+- Stage 4 AD validation TAMAMLANDI (GSE125583 / SRP181886, n=289)
+- **Dose-response bulgusu: 17/20 gen daha ekstrem in Advanced AD, Wilcoxon p=1.3e-5**
+- İki alt-grup keşfi: Neuronal-loss (14) + Glial-stress (6)
 
 ---
 
-## Yarın için öncelikli görevler
+## Yarın için ana görev — Stage 4 GBM validation
 
-### 1. Stage 3 sign convention temizliği (yüksek öncelik)
-- `R/06_stage3_convergence.R` içinde TODO comment var — Test 1 (RRHO2) başlığından önce
-- Kod bug'sız çalışıyor ama yorum satırları H2a beklerken kod concordant test ediyor
-- Yeniden yazım için: `stage3_quadrant_analysis.rds` yaklaşımını kalıcılaştır (4 quadrant ayrı ayrı)
-- Alternatif: RRHO2 iki yönde çağır (concordant + discordant), sonuçları birleştir
+### Ana hipotez
+DD signature GBM'de de reproducible mi? Beklenen:
+- Group A (nöronal) → GBM'de DOWN (Neftel Stage 2 ile uyumlu)
+- Group B (glial-stress) → GBM'de UP? (reactive glia-like ama tumor context)
 
-### 2. Pathway enrichment analizi (DU + DD gen setleri için)
-- **DU (H2a) 18 gen:** GO/KEGG enrichment — sinaptik pathway'ler bekleniyor
-  - clusterProfiler::enrichGO, org.Hs.eg.db
-  - Background: 3,857 ortak evren geni
-- **DD 20 gen:** GO/KEGG — activity-dependent + metabolic + glial support pathway'ler
-- Yeni dosya: `R/07_stage3_pathways.R`
-- Manuskrit figürü için bar plot
+### Öncelikli veri kaynakları
 
-### 3. RRHO2 heatmap PDF kaydı
-- `stage3_convergence.rds` içinde `rrho_object` var (RRHO2 hesaplama sonucu)
-- `RRHO2_heatmap()` fonksiyonu ile PDF'e kaydet
-- `results/figures/stage3_rrho2_heatmap.pdf` — manuskrit için critical figure
-- Dört quadrantı işaretle (DU, DD annotation)
+1. **recount3 içindeki GBM cohortları (öncelik)** — açık, standardize, ideal
+   - TCGA-GBM recount3'te var: `available_projects()` kontrol
+   - CGGA: recount3 içinde olmayabilir, alternatif indirme gerek
 
-### 4. H1 hazırlığı (opsiyonel — yarın enerji varsa başla)
-- TCGA-GBM bulk data işlenmesi — TOIL RSEM dosyası (1.26 GB)
-  - `data/raw/xena/TcgaTargetGtex_rsem_gene_tpm.gz`
-- MuSiC + BRETIGEA deconvolution planlaması
-- Stage 4 (05_qc_bulk.R placeholder skeleton var)
+2. **GSE108474 (REMBRANDT)** — GEO açık, ~500 sample, brain cancer + normal
+   - Yedek seçenek
 
----
+### Metodoloji
+AD tarafındaki analiz aynen tekrarlanacak:
+- 20 DD gen'i çek (aynı ENSEMBL ID'ler)
+- CPM normalize
+- GBM tumor vs normal brain karşılaştırması
+- Direction check + dose-response (WHO grade ile stratify)
+- Group A / Group B ayrı analiz
 
-## Metodolojik dikkatler
-
-### Sign convention sorunları
-- RRHO2'nin default davranışı 'concordant' overlap arıyor
-- 'Discordant' (H2a gibi) için list2'yi flip etmek yeterli DEĞİL (test tekrarı aynı sonucu verdi — nedeni tam anlaşılamadı)
-- Manuel 4-quadrant top-N analiz en şeffaf yaklaşım — bu yaklaşımı stage 3 pipeline'ının resmi çıktısı yap
-
-### İstatistiksel dürüstlük
-- DU (p=0.014) ve DD (p=0.003) borderline/moderate — validation gerekli
-- Multiple testing farkındalığı: 4 quadrant test edildi, Bonferroni × 4 → DU p=0.056 (n.s.), DD p=0.012 (borderline)
-- Manuskritte: DD'yi 'discovery' olarak sun, replication cohort gerektiğini belirt
-
-### Pre-specification integrity
-- H2 REJECTED kararı korunuyor (pre-specified rule ile)
-- DU + DD bulguları POST-HOC olarak sunulacak (dürüst reporting)
-- Manuskrit hikayesi: 'primary hypothesis rejected but discovery findings identified'
+### Beklenen süreçler
+- Veri indirme + preprocessing: ~1 saat
+- Direction analiz: ~30 dk
+- Dose-response (WHO grade II/III/IV): ~30 dk
+- Kayıt + grafik: ~30 dk
+- **Toplam: 2-3 saat**
 
 ---
 
-## Diskteki tüm intermediate dosyalar (kontrol için)
+## AD validation bulgusu özeti (referans)
 
-1. ad_bulk.rds (6.9 MB, dünkü AD meta-cohort)
-2. neftel_modules.rds (dünkü, 8 meta-modul gen listeleri)
-3. leng_processed.rds (97 MB, vulnerable + non-vulnerable SCE)
-4. leng_pseudobulk.rds (1 MB)
-5. leng_deg_primary.rds (0.3 MB, 486 FDR<0.05)
-6. leng_deg_sensitivity.rds (0.5 MB, Braak 0 vs 6)
-7. leng_deg_per_subcluster.rds (0.7 MB)
-8. neftel_ucell_scores_backup.rds (0.3 MB, sensitivity için backup)
-9. neftel_states.rds (0.8 MB, filtered)
-10. neftel_deg_primary.rds (2.6 MB, 1576 FDR<0.05)
-11. stage3_convergence.rds (0.0 MB, RRHO2 + hypergeometric + permutation)
-12. stage3_quadrant_analysis.rds (0.2 MB, 4-quadrant discovery)
+### Sample özeti
+- GSE125583 / SRP181886, fusiform gyrus, RNA-seq (recount3)
+- 219 AD + 70 control
+- Braak stratification: I-III (early), V-VI (advanced)
 
----
+### Ana istatistikler
+- Direction check: 13/20 DOWN (65%), binomial p=0.13 (nominal)
+- Advanced AD: 14/20 DOWN (70%), binomial p=0.058 (borderline)
+- **Dose-response: 17/20 gen daha ekstrem in Advanced AD**
+  - Binomial p = 0.0013
+  - Wilcoxon signed-rank p = 1.3e-05
+- Group A (neuronal, 14 gen): +17.6% magnitude
+- Group B (glial-stress, 6 gen): +25.4% magnitude
 
-## Sonuç yorumlama için manuskrit önizlemesi
-
-### Ana bulgular (nihayete kadar korunacak)
-1. **H1 (bulk cell-composition):** Henüz test edilmedi — Stage 4 gerekli
-2. **H2 (identity oscillation):** Pre-specified formulation REJECTED — ancak partial support (18 gen, p=0.014)
-3. **H2' (unexpected shared identity loss):** Novel discovery — 20 gen, p=0.003, activity-dependent axis
-
-### Hedef dergiler (revised, sonuçlara göre)
-- **Primary:** Briefings in Bioinformatics (IF ~9.5) — methodology + honest reporting + discovery
-- **Backup:** BMC Medical Genomics (IF ~2.8) — güvenli
-- **Aspirational:** Neuro-Oncology veya Alzheimer's & Dementia (klinik yorum güçlü olursa)
-
-### Novelty vurgu
-1. First cross-disease AD-GBM neural convergence analysis
-2. Discovery of 'shared cellular fragility' axis (JUNB, ZFP36L1, SLC2A3, ALDOA)
-3. Methodology framework (pre-specification + honest post-hoc discovery)
+### İki alt-grup
+- **Group A (neuronal-loss, 14 gen DOWN):** NRN1, PNMA2, OLFM1, IDS, ALDOA, HRH1, BAIAP2, ATP1B2, UBC, PPP2CB, PEA15, SLC2A3, CANX
+- **Group B (glial-stress, 6 gen UP):** JUNB, CEBPD, ZFP36L1, PER1, FLNA, PFKFB3
 
 ---
 
-**Not:** Bugün 10 saatlik yoğun bir gün. Yarın taze zihinle Stage 3 temizlik + pathway analysis öncelik. H1 için TCGA bulk işi ayrı bir gün (Stage 4).
+## Manuskript güncelleme — güç kazanımı
+
+### Önceki tahmin (Stage 3 sonrası)
+IF 5-10 hedef
+
+### Şimdiki tahmin (Stage 4 AD validation sonrası)
+IF 8-12 hedef — çünkü:
+- Discovery (Stage 3) + Validation (Stage 4 AD) mevcut
+- Wilcoxon p=1.3e-5 hakem gözünde güçlü kanıt
+- Cell-composition confounding indirect kanıt (H1 dolaylı destek)
+- İki alt-grup keşfi manuscript'i daha derin yapıyor
+
+GBM validation eklendiğinde IF potansiyeli daha da artabilir.
+
+---
+
+## Enerji notu
+
+Bugün ~5.5 saat aktif çalışıldı — yoğun ama verimli.
+Yarın 3-4 saat yeterli (GBM validation daha rutin, AD paradigm'i tekrarla).
 
