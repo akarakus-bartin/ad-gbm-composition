@@ -119,3 +119,43 @@ OR: Ibáñez K, Boullosa C, Tabarés-Seisdedos R, et al. Molecular evidence for 
 **Full BibTeX:** [PENDING — GEO'dan orijinal makaleyi doğrula]
 
 ---
+
+### [12] edgeR — bioconductor DE analysis
+
+**Tentative citation:** Robinson MD, McCarthy DJ, Smyth GK. edgeR: a Bioconductor package for differential expression analysis of digital gene expression data. Bioinformatics. 2010;26(1):139-140.
+
+OR: McCarthy DJ, Chen Y, Smyth GK. Differential expression analysis of multifactor RNA-Seq experiments with respect to biological variation. Nucleic Acids Res. 2012;40(10):4288-4297.
+
+**Used in:** Methods 2.2 (Stage 1), 2.3 (Stage 2)
+**Full BibTeX:** [PENDING]
+
+---
+
+### [13] RRHO2 — Rank-Rank Hypergeometric Overlap
+
+**Tentative citation:** Cahill KM, Huo Z, Tseng GC, Logan RW, Seney ML. Improved identification of concordant and discordant gene expression signatures using an updated rank-rank hypergeometric overlap approach. Sci Rep. 2018;8(1):9588.
+
+**Used in:** Methods 2.4.2 (Test 1, RRHO2), Figure 3 caption
+**Full BibTeX:** [PENDING]
+
+---
+
+### [14] clusterProfiler — Bioconductor pathway enrichment
+
+**Tentative citation:** Wu T, Hu E, Xu S, et al. clusterProfiler 4.0: A universal enrichment tool for interpreting omics data. The Innovation. 2021;2(3):100141.
+
+OR (klasik): Yu G, Wang LG, Han Y, He QY. clusterProfiler: an R package for comparing biological themes among gene clusters. OMICS. 2012;16(5):284-287.
+
+**Used in:** Methods 2.4.4 (pathway enrichment for DD and DU signatures)
+**Full BibTeX:** [PENDING]
+
+---
+
+### [15] limma — Bioconductor differential expression (voom for RNA-seq)
+
+**Tentative citation:** Ritchie ME, Phipson B, Wu D, et al. limma powers differential expression analyses for RNA-sequencing and microarray studies. Nucleic Acids Res. 2015;43(7):e47.
+
+**Used in:** Methods 2.5.2 (Stage 4 GBM validation, limma-voom for TCGA-GBM vs GTEx)
+**Full BibTeX:** [PENDING]
+
+---
