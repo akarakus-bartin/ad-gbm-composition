@@ -469,3 +469,44 @@ hindbrain).
 - Figure 6 (Cross-disease scatter): title removed, quadrant labels repositioned
 - All figures now follow publication-standard (no in-figure title/subtitle)
 - Panel labels (A, B, C) preserved as they are publication-standard
+
+---
+
+## 2026-09-23 (12:15) — File naming convention + Figure 2 y-axis refinement
+
+**Commit:** <next commit>
+
+### File rename — content-based naming convention
+
+Renamed all figure files to remove journal-numbering prefixes (figure1_, 
+figure2_, stage3_, stage4_) for journal-agnostic reproducibility:
+
+- figure1_study_design.pdf         → study_design.pdf
+- figure2_signature_discovery.pdf  → signature_discovery.pdf
+- stage3_rrho2_heatmap_annotated   → rrho2_heatmap_annotated.pdf
+- stage3_rrho2_heatmap.pdf         → rrho2_heatmap.pdf
+- stage3_pathway_enrichment.pdf    → pathway_enrichment.pdf
+- stage4_ad_dose_response.pdf      → ad_dose_response.pdf
+- stage4_cross_disease_scatter.pdf → cross_disease_scatter.pdf
+
+Rationale: journal reformatting can change figure order (e.g., 'Figure 3'
+becomes 'Figure 5'). Content-based file names remain valid regardless of
+final numbering. All renames used 'git mv' to preserve history.
+
+### Figure 2 (signature_discovery.pdf) y-axis refinement
+
+Y-axis limit reduced from 15+ (with ~70% white space above data) to 8+ 
+(minimal padding above data max ~7). Improved data-ink ratio (Tufte).
+Top gene labels and overall pattern preserved.
+
+### Manuscript figure mapping (as of 2026-09-23):
+
+| # | File | Content |
+|---|------|---------|
+| Figure 1 | study_design.pdf | 4-stage workflow diagram |
+| Figure 2 | signature_discovery.pdf | Volcano plots + composition bars |
+| Figure 3 | rrho2_heatmap_annotated.pdf | Cross-disease RRHO2 heatmap (pending refinement) |
+| Figure 4 | pathway_enrichment.pdf | DD + DU pathway bar plots |
+| Figure 5 | ad_dose_response.pdf | Braak dose-response |
+| Figure 6 | cross_disease_scatter.pdf | AD × GBM logFC + 3 categories |
+| Supp | rrho2_heatmap.pdf | Default RRHO2 (no annotations) |
