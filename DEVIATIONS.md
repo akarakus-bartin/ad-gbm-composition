@@ -510,3 +510,42 @@ Top gene labels and overall pattern preserved.
 | Figure 5 | ad_dose_response.pdf | Braak dose-response |
 | Figure 6 | cross_disease_scatter.pdf | AD × GBM logFC + 3 categories |
 | Supp | rrho2_heatmap.pdf | Default RRHO2 (no annotations) |
+
+---
+
+## 2026-09-23 (afternoon) — Figure 3 (RRHO2) refinement
+
+**Commit:** <next commit>
+
+### Figure 3 (rrho2_heatmap_annotated.pdf) publication-standard version
+
+Regenerated from stage3_conv$rrho_object$hypermat (43×43 matrix) using ggplot2
+with the same annotations as the v1 draft (2026-09-22) but without the
+in-figure title/subtitle.
+
+**Removed (title/subtitle → will go in manuscript caption):**
+- Main title: 'Cross-disease RRHO2 heatmap'
+- Subtitle: 'Quadrant BH-P: UU=6.8 | UD=6.3e+02 | DU=0.11 | DD=0.00053*'
+
+**Preserved (in-figure elements):**
+- Viridis inferno color scale (-log10 P)
+- 4 quadrant labels: UU (both UP), UD (AD UP × GBM DOWN),
+  DU (AD DOWN × GBM UP) [H2a], DD (both DOWN) [NOVEL]
+- Cyan × marker at max signal position (row 35, col 38 = DD peak)
+- Midpoint dashed lines separating UP/DOWN halves
+- Axis labels: GBM UP/midpoint/GBM DOWN (x), AD UP/midpoint/AD DOWN (y)
+
+**Orientation verification:**
+- Right-bottom quadrant = DD (both DOWN): max value 6.54 at row 35, col 38
+- Left-bottom quadrant = DU (AD DOWN, GBM UP) [H2a]: max value 4.21
+- Left-top quadrant = UU (both UP): max value 2.44
+- Right-top quadrant = UD: max value 2.94 (essentially null)
+- Consistent with hyper geometric summary_table quadrant p-values.
+
+### Manuscript figure set — NOW COMPLETE (6 main + 1 supplementary):
+
+All 6 main figures now follow publication-standard conventions:
+- No in-figure title or subtitle (moved to captions)
+- Panel labels (A, B, C) preserved where applicable
+- Content-based file names (journal-agnostic)
+- Reproducible via R scripts / bellek objects + RDS files
