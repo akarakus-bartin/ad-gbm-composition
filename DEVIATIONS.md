@@ -416,3 +416,56 @@ as a genuine compensatory/reactive gene, not a contrast reversal artifact.
 5. Figure 5: stage4_ad_dose_response.pdf
 6. Figure 6: stage4_cross_disease_scatter.pdf (minor label refinement pending)
 7. Supplementary: stage3_rrho2_heatmap.pdf
+
+---
+
+## 2026-09-23 (late morning) — Figure 4 v3 regenerated with explicit filter
+
+**Commit:** <next commit>
+
+### Problem identified:
+Figure 4 v1 (2026-09-22) was created ad-hoc without explicit filter documentation.
+When regenerated today from CSV files, discovered inconsistency: yesterday's
+figure had 9 pathways (6 GO BP + 3 KEGG) but CSV-based regeneration returned
+~14 pathways with tissue-irrelevant terms (hindbrain, cardiac, muscle) mixed in.
+
+### Root cause:
+Yesterday's figure applied implicit filters that were not formally documented
+in DEVIATIONS or in a reproducible script. These included exclusion of generic
+parent terms ('system process') and tissue-irrelevant pathways (cardiac,
+hindbrain).
+
+### Resolution — v3 filter formalized:
+
+**DD/DU GO BP filter:**
+1. Count ≥ 3 (minimum gene support)
+2. p_raw < 0.01 (for DD), < 0.05 (for DU, weaker signature)
+3. Exclude tissue-irrelevant terms (regex): 
+   'circulat|vascul|blood|heart|cardiac|cardiomyoc|muscl|hindbrain'
+4. Exclude generic parent terms:
+   '^system process$|^regulation of system process$|^intracellular signaling cassette$'
+5. Top 6 (DD) / top 8 (DU) by p-value
+
+**DD KEGG filter:**
+1. p_raw < 0.05
+2. Same tissue-irrelevant exclude
+3. All passing (6 pathways: Fructose/mannose, Thyroid hormone, Pentose phosphate,
+   Glycosaminoglycan, HIF-1, AMPK)
+
+### Improvement over v1:
+- HIF-1 signaling and AMPK signaling NOW INCLUDED (were missing in v1)
+- These pathways were mentioned in DEVIATIONS but not shown in v1 figure
+- v3 is now CONSISTENT with DEVIATIONS narrative
+- Filter is scripted and reproducible
+
+### Follow-up:
+- Filter code should be moved to a new '10_figures_publication.R' script (tomorrow)
+- Current figure file: results/figures/stage3_pathway_enrichment.pdf
+
+### Also completed this morning (part of same commit):
+- Figure 1 (Study Design): title removed, publication-standard
+- Figure 2 (Signature Discovery): titles removed, panel A/B/C tags added
+- Figure 5 (AD dose-response): title/subtitle removed
+- Figure 6 (Cross-disease scatter): title removed, quadrant labels repositioned
+- All figures now follow publication-standard (no in-figure title/subtitle)
+- Panel labels (A, B, C) preserved as they are publication-standard
