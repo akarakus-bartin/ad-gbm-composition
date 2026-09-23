@@ -367,3 +367,52 @@ Also performed with TCGA-GBM 5 internal solid-tissue normals — similar directi
 3. stage3_pathway_enrichment.pdf (Figure 4)
 4. stage4_ad_dose_response.pdf (Figure 5)
 5. stage4_cross_disease_scatter.pdf (Figure 6, MAIN)
+
+---
+
+## 2026-09-23 (morning) — Figures 1 & 2 created + threshold consistency verified
+
+**Commit:** <next commit>
+
+### Figures created (English, publication-quality drafts):
+
+**Figure 1: Study Design workflow** — vertical top-down flow diagram
+- 4 stages (STAGE 1-4) with color-coded biology
+- Sample sizes visible: Leng n=42, Neftel n=28, GSE125583 n=289, TCGA n=157, GTEx n=510
+- Key statistics highlighted: Wilcoxon p=1.3e-5, Spearman ρ=0.713
+- File: results/figures/figure1_study_design.pdf
+
+**Figure 2: Signature discovery overview** — 3-panel (A/B volcano + C summary bars)
+- Panel A: Leng vulnerable RORB+ neurons volcano (486 DEGs)
+- Panel B: Neftel neural-mimicry volcano (1,576 DEGs)
+- Panel C: Signature composition bar chart
+- Contrast directions documented in subtitles for reproducibility
+- File: results/figures/figure2_signature_discovery.pdf
+
+### Threshold consistency verification:
+
+Discovered a small inconsistency during Figure 2 creation:
+- Initial code used FDR<0.05 AND |logFC|>0.25 → returned 486 + 1,573 DEGs
+- Original manuscript context used FDR<0.05 alone → 486 + 1,576 DEGs
+- Discrepancy: 3 Neftel genes with FDR<0.05 but |logFC|<0.25 (borderline)
+
+**Resolution:** Adopted FDR<0.05 alone (consistent with Analysis Plan v1 and all
+prior documentation). Figure 2 uses this threshold. Numbers are now uniformly
+486 (Leng) and 1,576 (Neftel) across all figures, tables, DEVIATIONS entries,
+and forthcoming manuscript text.
+
+### Contrast directions verified:
+- Leng: `braak_groupBraak2 - braak_groupBraak0` (Advanced AD minus early/control)
+- Neftel: `NeuralLineage vs Other` (NPC/OPC-like states relative to other states)
+
+Both directions match manuscript interpretation. LUZP2 (Leng UP, logFC=+1.60) confirmed
+as a genuine compensatory/reactive gene, not a contrast reversal artifact.
+
+### Manuscript figure inventory (current 7 PDFs):
+1. Figure 1: study_design.pdf
+2. Figure 2: signature_discovery.pdf
+3. Figure 3: rrho2_heatmap_annotated.pdf
+4. Figure 4: pathway_enrichment.pdf
+5. Figure 5: stage4_ad_dose_response.pdf
+6. Figure 6: stage4_cross_disease_scatter.pdf (minor label refinement pending)
+7. Supplementary: stage3_rrho2_heatmap.pdf
