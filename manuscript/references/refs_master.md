@@ -159,3 +159,45 @@ OR (klasik): Yu G, Wang LG, Han Y, He QY. clusterProfiler: an R package for comp
 **Full BibTeX:** [PENDING]
 
 ---
+
+### [16] Liu et al. 2013 — First bulk AD-GBM transcriptomic comparison
+
+**Full citation:** Liu T, Ren D, Zhu X, Yin Z, Jin G, Zhao Z, Robinson D, Li X, Wong K, Cui K, Zhao H, Wong STC. Transcriptional signaling pathways inversely regulated in Alzheimer's disease and glioblastoma multiform. Sci Rep. 2013;3:3467. doi:10.1038/srep03467
+
+**Key findings:**
+- Bulk microarray, 1,091 GBM + 524 AD cohorts
+- ERK/MAPK signaling up in GBM, Angiopoietin Signaling up in AD (inverse)
+- APPswe transgenic mouse: Aβ suppresses GBM growth
+- Mechanism: ERK-AKT-p21-cell cycle + anti-angiogenesis
+
+**Relationship to our manuscript:**
+- Established AD-GBM inverse regulation at BULK level
+- Our niche: cell-type resolution + pre-registration + post-2019 Neftel/Leng frameworks
+- Different biology: our HIF-1/AMPK vs their ERK/MAPK
+
+**Full BibTeX:** [PENDING]
+
+---
+
+### [17] TNFRSF12A study — 2025 Sci Rep, PubMed 40595248 [VERIFY]
+
+**Reported:** AD-GBM Mendelian randomization + scRNA-seq + bulk + cell-cell
+communication + in vitro validation. 413 shared tumor suppressor genes.
+Inverse regulation pattern.
+
+**Impact:** DIRECTLY limits our 'first cell-type comparison' claim.
+BONUS: same journal (Scientific Reports) — editorial fit evidence.
+
+**Full citation + BibTeX:** [PENDING PubMed lookup]
+
+---
+
+### [18] Mitochondrial signatures — 2025 Front Aging Neurosci [VERIFY]
+
+**Reported:** AD-GBM cross-disease mitochondrial markers + multi-omic.
+
+**Impact:** Second 2025 AD-GBM cross-disease study — limits our claim further.
+
+**Full citation + BibTeX:** [PENDING PubMed lookup]
+
+---
