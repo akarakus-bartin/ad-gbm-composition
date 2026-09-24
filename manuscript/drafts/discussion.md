@@ -14,6 +14,8 @@ Bu çalışmanın temel amacı, Alzheimer hastalığı (AH) ve glioblastoma mult
 
 ---
 
+Bulgularımız, AH-GBM ortak biyolojisini araştıran öncü çalışmalarla çelişki oluşturmak yerine tamamlayıcı bir katman sunmaktadır. Liu ve arkadaşlarının 2013'teki bulk mikrodizin çalışması¹⁶, ERK/MAPK ve Angiopoietin yolakları üzerinden ters yönlü yolak regülasyonu çerçevesini oluşturmuş; bizim analizimiz ise hücre-tipi çözünürlüğünde her iki hastalıkta aşağı-regüle olan bir çekirdek imzayı (DD) ortaya koymuştur — bu farklılık, bulk-düzeyi ters regülasyon sinyalinin hücre-tipi düzeyinde farklı bir örüntüye dönüşebileceğini düşündürmektedir. Liu ve arkadaşlarının 2025 çalışması¹⁷, 1.217 tümör baskılayıcı gen listesi ile kısıtlanmış bir aday-gen taramasında TNFRSF12A'yı öne çıkarmıştır; bizim transkriptom-wide analizimizde bu gen DD imzasında yer almamıştır, bu da metodolojik yaklaşım (aday-gen listesi vs transkriptom-wide) farkının doğrudan bir sonucudur. Xu ve arkadaşlarının 2025 çalışması¹⁸, makine öğrenmesi tabanlı marker seçimi ile dört mitokondriyal marker (EFHD1, SASH1, FAM110B, SLC25A18) tanımlamıştır; bu markerlardan hiçbiri bizim DD imzamızda yer almamaktadır, ancak Xu ve arkadaşlarının vurguladığı mitokondriyal disfonksiyon ekseni ile bizim bulgularımızdaki HIF-1/AMPK metabolik-stres ekseni biyolojik olarak birbirini destekleyen kavramlar olabilir. Bu üç öncü çalışma ile bizim analizimizin farklı gen kümelerini işaret etmesi, çelişki değil, farklı metodolojik pencerelerden bakıldığında AH-GBM ortak biyolojisinin çok katmanlı bir olgu olduğuna işaret etmektedir.
+
 ## 4.2 Bulguların biyolojik yorumu
 
 ### 4.2.1 Paylaşılan nöronal kimlik kaybı ekseni
