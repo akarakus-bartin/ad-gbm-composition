@@ -201,3 +201,33 @@ BONUS: same journal (Scientific Reports) — editorial fit evidence.
 **Full citation + BibTeX:** [PENDING PubMed lookup]
 
 ---
+
+### [16] Liu et al. 2013 — First bulk AD-GBM transcriptomic comparison
+
+Liu T, Ren D, Zhu X, Yin Z, Jin G, Zhao Z, Robinson D, Li X, Wong K, Cui K, Zhao H, Wong STC. Transcriptional signaling pathways inversely regulated in Alzheimer's disease and glioblastoma multiform. Sci Rep. 2013;3:3467. doi:10.1038/srep03467
+
+**Used in:** Introduction ¶3 (literature grounding), Discussion 4.1 (comparison)
+**Verified:** ✓ PDF read 2026-09-24
+**BibTeX:** [PENDING Zotero]
+
+---
+
+### [17] Liu et al. 2025 — TNFRSF12A candidate-gene TSG scan
+
+Liu T, Pu J, Theil S, Liu Y, Jiang L, Liu H, Maciaczyk J, Schmidt-Wolf IGH, Walter J, Sharma A. Potential role of TNFRSF12A in linking glioblastoma and Alzheimer's disease via shared tumour suppressor pathways. Sci Rep. 2025;15:21535. doi:10.1038/s41598-025-08000-7
+
+**Used in:** Introduction ¶3, Discussion 4.1
+**Verified:** ✓ PDF read 2026-09-24
+**BibTeX:** [PENDING Zotero]
+
+---
+
+### [18] Xu et al. 2025 — Mitochondrial cross-disease markers
+
+Xu X, Wang J, Chen T, Wang S, Wang F, He J, Meng X-Y, Shen Y. Deciphering novel mitochondrial signatures: multi-omics analysis uncovers cross-disease markers and oligodendrocyte pathways in Alzheimer's disease and glioblastoma. Front Aging Neurosci. 2025;17:1536142. doi:10.3389/fnagi.2025.1536142
+
+**Used in:** Introduction ¶3, Discussion 4.1
+**Verified:** ✓ PDF read 2026-09-24
+**BibTeX:** [PENDING Zotero]
+
+---
