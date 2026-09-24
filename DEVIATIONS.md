@@ -549,3 +549,92 @@ All 6 main figures now follow publication-standard conventions:
 - Panel labels (A, B, C) preserved where applicable
 - Content-based file names (journal-agnostic)
 - Reproducible via R scripts / bellek objects + RDS files
+
+---
+
+## 2026-09-24: External review response — Braak notation clarification + Post-hoc age sensitivity plan
+
+### Context
+
+Two independent external reviews received (ChatGPT + Kimi; see `manuscript/reviews/`). Both flagged:
+
+1. **Braak notation ambiguity (Kimi):** Methods 2.2's 'Braak 0/1/2 three groups' phrasing was ambiguous — reader cannot tell whether these are collapsed group labels or literal Braak stages. Additionally, manuscript said 'Braak V-VI vs Braak 0-II' whereas actual primary contrast is Braak II − Braak 0.
+
+2. **Age confounder (ChatGPT + Kimi):** Leng cohort has 22-year age gap between Braak 0 (mean 60) and Braak II (mean 82) groups. Primary DE analysis run with `~ 0 + braak_group + subcluster` design — no age covariate.
+
+### Data verification (2026-09-24)
+
+Verified against `04_stage1_ad_signature.R` (line 9-14) and live R objects (`pheno_leng`, `leng_de`, `dge`):
+
+- Leng GEO metadata codes Braak stages as literal values 0, 2, 6 (representing Braak 0, II, VI)
+- Cohort composition: 20 donors × 2 brain regions (EC + SFG), all Male
+- Stage distribution: Braak 0 (n=6, avg 60 yr), Braak II (n=8, avg 82 yr), Braak VI (n=6, avg 78 yr)
+- Analysis design: **Primary contrast** Braak II − Braak 0 (`n_donors_ref=3, n_donors_test=4`, 21 pseudo-bulk samples), **Sensitivity contrast** Braak VI − Braak 0 (plan-conformant late-AD control)
+- Design matrix: `~ 0 + braak_group + subcluster` — RORB+ subcluster covariate included, age NOT included
+
+### Deviation 1: Manuscript text corrections (dokümantasyon düzeltmesi)
+
+**Type:** Documentation correction — no analysis change, aligning manuscript language with actual analysis
+
+**Changes made 2026-09-24:**
+
+- **Methods 2.2** completely rewritten:
+  - Removed misleading '(Braak 0 = kontrol/erken, Braak 1 = orta, Braak 2 = ileri) üç grup indirgeme' phrasing
+  - Added: 'Primary contrast Braak II − Braak 0 (Leng Fig 2c depletion peak justification), Sensitivity contrast Braak VI − Braak 0'
+  - Added explicit design matrix statement `~ 0 + braak_group + subcluster`
+  - Added cohort demographics: N per Braak stage, age distribution, all-male composition
+
+- **Introduction ¶4** corrected:
+  - Old: 'Braak V-VI (ileri patoloji) ile Braak 0-II (kontrol/erken) arasındaki farklı ifade'
+  - New: 'Braak II (erken patoloji) ile Braak 0 (kontrol) arasındaki farklı ifade (birincil kontrast); Braak VI − Braak 0 sensitivity Ek Tablo S1'
+
+- **Discussion 4.3.2** — 6th limitation added:
+  - All-male cohort composition
+  - 22-year age gap Braak 0 vs Braak II
+  - Age-Braak potential confounding acknowledgment
+  - Post-hoc sensitivity analysis reference (Deviation 2 below)
+
+### Deviation 2: Post-hoc age-covariate sensitivity analysis (planned 2026-09-25)
+
+**Type:** Post-hoc sensitivity analysis added in response to external review
+
+**Motivation:** Pre-registered analysis plan did not include age as covariate. External reviews (ChatGPT + Kimi) raised concerns about age confounding, particularly given the 22-year age gap between Braak 0 and Braak II groups. To evaluate robustness of DD signature findings under age adjustment, a post-hoc sensitivity analysis will be conducted 2026-09-25.
+
+**Design:** Re-run primary DE analysis with age-adjusted GLM: `~ 0 + braak_group + subcluster + age`
+
+**Outputs to be added:**
+- Ek Tablo S2: Age-adjusted logFC + FDR for all 20 DD signature genes, direct comparison with primary (age-unadjusted) results
+- Ek Şekil S3: Volcano-style scatter plot: age-unadjusted vs age-adjusted logFC for DD signature; concordance metrics (Spearman ρ, sign concordance %)
+
+**Interpretation framework (to be assessed post-analysis):**
+- If DD signature genes largely persist under age adjustment → primary findings robust, age not a major driver of the shared signal
+- If subset of DD genes lose significance → identify which pathway (neuronal identity vs stress-hypoxia vs metabolic-proliferative) is most age-sensitive
+- HIF-1/AMPK pathway components — specific attention: do these persist under age adjustment?
+
+**Pre-registration integrity:** Primary analysis remains bound to pre-registered plan (yaş kovaryatsız). Sensitivity analysis explicitly labeled as post-hoc and dokümante here. This deviation is transparent, motivated by external review, and does not retroactively modify the primary finding — only characterizes its robustness.
+
+### Rationale for handling
+
+Two-track approach maintains:
+1. **Pre-registration discipline** — primary analysis unmodified, plan integrity preserved
+2. **Scientific rigor** — sensitivity analysis addresses legitimate reviewer concern
+3. **Transparency** — deviation documented before analysis run (not after)
+4. **Robustness reporting** — DD signature characterized under both models
+
+### Files affected
+
+- `manuscript/drafts/introduction.md` + `.docx`
+- `manuscript/drafts/methods.md` + `.docx`
+- `manuscript/drafts/discussion.md` + `.docx`
+- `manuscript/reviews/2026-09-23_chatgpt_review.md`
+- `manuscript/reviews/2026-09-24_kimi_review.md`
+- `manuscript/reviews/2025_papers_comparison.md`
+- `R/04_stage1_ad_signature.R` — to be extended 2026-09-25 with sensitivity analysis
+- `outputs/` — Ek Tablo S2, Ek Şekil S3 to be added 2026-09-25
+
+### Status
+
+- 2026-09-24 18:00 — Documentation corrections completed (Deviation 1 ✓)
+- 2026-09-25 — Sensitivity analysis to be run (Deviation 2 ⏳)
+- Post-analysis update: this section to be revised with actual sensitivity results
+
