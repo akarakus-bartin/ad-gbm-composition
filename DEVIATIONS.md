@@ -901,3 +901,21 @@ Triggered by today's analyses. Reference: Analysis_Plan_v1.docx (commit 3fcf8d1,
 ### Next
 - Stage 4 / H1 with BRETIGEA (+ second method) on plan cohorts. Manuscript scenario (plan section 12) to be chosen after H1 is locked.
 
+
+---
+
+## 2026-09-27 — Stage 4 / H1 PRE-DECLARATION (before any Stage 4 result is produced)
+
+Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; Model A for AD would fail because brain_region has one level; method-2 reference missing). The 2026-09-22 justification for dropping H1 (Synapse DUC) is incorrect: plan cohorts are public and the missing item was the public Allen reference.
+
+- D1 GBM cohort: plan cohort from Xena TOIL (TCGA-GBM primary tumour + GTEx Brain-Hippocampus and Brain-Frontal Cortex BA9). recount3 cohort not used for H1.
+- D2 GTEx RIN<6 / Hardy>3 exclusion: not available in Xena phenotype; primary run without it (deviation); sensitivity if GTEx annotation files are added.
+- D3 Gene mapping: Ensembl (version stripped) -> symbol via GENCODE; duplicate symbols collapsed by highest mean expression (plan 5.1 rule).
+- D4 GBM Model A: ~ diagnosis + sex (brain_region dropped: confounded with diagnosis). Sensitivity: BA9-only and hippocampus-only controls.
+- D5 AD Model A: ~ diagnosis + sex + age + dataset on ComBat data (plan); brain_region dropped (single level after 2026-09-20 hippocampus restriction).
+- D6 Shared DEG, primary: FDR<0.05 in both cohorts + same sign (plan 2.2/6.4). Sensitivity: + |log2FC| > 0.5 (AD) / > 1 (GBM) (plan Table 2).
+- D7 Order: BRETIGEA (Model B) first. If ratio_B >= 0.50 -> H1 REJECTED (plan: either method); method 2 not required for the decision. If ratio_B < 0.50 -> decision deferred until method 2 is completed.
+- D8 If Model A shared count = 0 -> H1 not evaluable.
+- D9 BRETIGEA brainCells: nMarker = 50, human, cell types ast/end/mic/neu/oli/opc, scale = TRUE.
+- D10 limma lmFit + eBayes defaults; diagnosis coefficient.
+
