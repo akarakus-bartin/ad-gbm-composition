@@ -986,3 +986,15 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
   Arm 2: if median composition R^2 < 0.25: retention < 0.20 -> H1 collapse NOT composition-specific; >= 0.80 -> composition-specific; otherwise partial. If median R^2 >= 0.25 -> Arm 2 non-discriminating (random genes also capture composition).
 - Seed PARAMS$seed. Script: R/07e_stage4_negative_control.R.
 
+
+---
+
+## 2026-09-27 — EXPLORATORY negative control RESULTS (07e; pre-declared rules)
+
+- Arm 1 (6 noise covariates, 1000 it.): median AD DEGs 3784 (retention 0.851); median shared 1279 (A: 1458). Call: power loss does NOT explain the collapse.
+- Arm 2 (6 random-gene PC1 covariates): median AD DEGs 0 (retention 0.000); median composition R^2 = 0.501 (min 0.249). Call: NON-DISCRIMINATING — random genes also capture the composition axis.
+- CORRECTION to the 2026-09-27 BRETIGEA interpretation note: the suggestion that part of the AD collapse reflects power loss (n=51) is refuted by Arm 1.
+- Interpretation: AD bulk DE is carried by the dominant expression axis shared by composition scores and random-gene PCs. The collapse is not a power artefact, but these data cannot establish that this axis is exclusively cell composition (vs co-varying factors such as RNA quality or post-mortem variables).
+
+### Stage 4 closed. Locked results: H2 REJECTED (0/3, all variants); H1 SUPPORTED (ratio_B = ratio_C = 0). Plan section 12 -> Scenario B.
+
