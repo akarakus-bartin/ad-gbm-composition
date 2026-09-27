@@ -958,3 +958,18 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - D23: MuSiC Est.prop.weighted (package default estimate) is used.
 - D24: Model D (A + BRETIGEA + MuSiC) computed as exploratory only (plan 6.4); Model A identical to 07b. Final H1 decision per plan 2.2 on ALL_fdr: SUPPORTED if ratio_B <= 0.20 AND ratio_C <= 0.20; REJECTED if either >= 0.50; otherwise INCONCLUSIVE.
 
+
+---
+
+## 2026-09-27 — Stage 4 / H1 FINAL DECISION (07d; pre-declared D1-D24)
+
+- MuSiC (Allen M1 reference, 3023 cells): common genes AD 16709, GBM 14651.
+- DEG FDR<0.05: AD_C 0 (A: 4449), GBM_C 14853 (A: 14811); exploratory D: AD 0, GBM 6873.
+- PRIMARY ALL_fdr: shared A = 1458, B = 0, C = 0; ratio_B = 0.000, ratio_C = 0.000 -> H1 SUPPORTED (plan 2.2). All sensitivities (lfc; BA9-only; hippocampus-only) identical.
+- Combined with H2 REJECTED (0/3, all variants) -> plan section 12 Scenario B.
+
+### Caveats recorded at decision time (not used to alter the decision)
+1. MuSiC proportions biologically implausible in both cohorts (neurons 0.2-0.9%, endothelium 42-46%, microglia 16-31%). Likely causes: nuclear-transcriptome reference vs bulk tissue RNA, MuSiC cell-size weighting, microarray scale mismatch (D16). Method 2 validity as a composition estimate is questionable.
+2. Collapse is driven entirely by the AD side (n=51): AD DEGs 4449 -> 0 under both B and C; GBM DEGs essentially unchanged under C.
+3. Circularity: both covariate sets are derived from the analysed expression data; any data-derived covariates capturing the main disease axis may suppress DE regardless of composition. To be probed with a pre-declared exploratory negative control (random gene-set covariates).
+
