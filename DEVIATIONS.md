@@ -638,3 +638,197 @@ Two-track approach maintains:
 - 2026-09-25 — Sensitivity analysis to be run (Deviation 2 ⏳)
 - Post-analysis update: this section to be revised with actual sensitivity results
 
+
+---
+
+## 2026-09-25: Age-covariate sensitivity analysis COMPLETED — critical finding
+
+### Analysis executed
+
+Age-adjusted DE analysis run with design `~ 0 + braak_group + subcluster + age` on Leng pseudo-bulk counts (n=21 samples for Braak II vs 0 primary; n=17 samples for Braak VI vs 0 sensitivity). Function: `run_edger_pooled_agecov()` — parallel to `run_edger_pooled()` with age added as continuous covariate.
+
+### Results — quantitative summary
+
+**Primary contrast (Braak II − Braak 0):**
+- Age-unadjusted DE genes (FDR<0.05): **486**
+- Age-adjusted DE genes (FDR<0.05): **3** (SCIMP, ARL17B, LUZP2)
+- Reduction: 99.4%
+
+**Sensitivity contrast (Braak VI − Braak 0):**
+- Age-unadjusted DE genes (FDR<0.05): **4,085**
+- Age-adjusted DE genes (FDR<0.05): **1,072**
+- Reduction: 73.8%
+
+### Collinearity diagnostics
+
+Both contrasts exhibit severe age-Braak collinearity, reflecting the Leng cohort's donor selection structure rather than an analytical artifact:
+
+**Braak II vs 0 (primary):**
+- Pearson r(Braak, age) = 0.797
+- Spearman ρ(Braak, age) = 0.866
+- Design matrix condition number = 951
+- Age ranges: Braak 0 = [50, 71], Braak II = [72, 91] — **zero overlap**
+
+**Braak VI vs 0 (sensitivity):**
+- Pearson r(Braak, age) = 0.811
+- Spearman ρ(Braak, age) = 0.893
+- Design matrix condition number = 1028
+- Age ranges: Braak 0 = [50, 71], Braak VI = [72, 82] — **zero overlap**
+
+Reference: condition number >30 indicates collinearity concern; >100 severe; >900 indicates near-singular design.
+
+### DD signature (20 genes) persistence analysis
+
+All 20 DD signature genes remain in age-adjusted DE tables (no gene filtered out by `filterByExpr`), enabling direct comparison of primary vs age-adjusted logFC and FDR values.
+
+**Primary contrast (Braak II − Braak 0):**
+- Sign concordance: 12/20 = 60% (marginally above chance)
+- FDR<0.05 persistence: **0/20 = 0%**
+- logFC correlation (Spearman ρ): −0.564 (NEGATIVE)
+- logFC correlation (Pearson r): −0.858 (NEGATIVE)
+
+**Sensitivity contrast (Braak VI − Braak 0):**
+- Sign concordance: 13/20 = 65%
+- FDR<0.05 persistence: **1/20 = 5%** (only CANX)
+- logFC correlation (Spearman ρ): −0.313 (NEGATIVE)
+- logFC correlation (Pearson r): −0.589 (NEGATIVE)
+
+### Sign flips in DD signature (Primary contrast)
+
+Eight genes exhibited sign flip (logFC direction reversal) between age-unadjusted and age-adjusted models:
+
+| Gene | logFC_unadj | logFC_age | Note |
+|------|-------------|-----------|------|
+| FLNA | −1.82 | +0.02 | Cytoskeletal |
+| JUNB | −3.54 | +1.81 | Stress TF, immediate early gene |
+| NRN1 | −0.95 | +0.22 | Neuronal identity marker |
+| PER1 | −1.35 | +0.65 | Circadian regulator |
+| **PFKFB3** | **−1.20** | **+0.23** | **HIF-1 target, glycolytic regulator** |
+| SDC3 | −1.66 | +0.72 | Cell surface proteoglycan |
+| **SLC2A3** | **−1.74** | **+0.50** | **HIF-1 target, glucose transporter** |
+| ZFP36L1 | −3.67 | +1.96 | mRNA stability, stress response |
+
+**Critical observation:** Two central HIF-1/glycolytic axis genes (PFKFB3, SLC2A3) — cornerstone of the manuscript's Discussion 4.2.2 biological interpretation — exhibit sign flip. This weakens direct attribution of the shared stress/hypoxia axis claim to Braak-specific effect at the discovery-cohort level.
+
+### Interpretation framework — three possibilities
+
+**1. Statistical artifact (collinearity + small sample size):**
+- 21 samples × 5 coefficients → each coefficient has ~4 degrees of freedom
+- Condition number 951 indicates near-singular design matrix
+- Coefficient sign flip is a known statistical pathology under severe collinearity with small samples
+- Under this interpretation: results are mathematically valid but not biologically interpretable
+
+**2. Genuine confounding (age effect misattributed to Braak):**
+- PFKFB3 and SLC2A3 are known age-associated genes (senescence, glucose metabolism reprogramming)
+- JUNB, ZFP36L1 are age-responsive stress genes
+- Under this interpretation: original 486 DE genes captured age effects, not Braak effects specifically
+
+**3. Hybrid (most likely):**
+- Cohort selection structurally prevents disentangling age from Braak effects
+- Some fraction of DD signature genes may be age-associated; others may be Braak-specific
+- Definitive attribution not possible from Leng cohort alone
+
+### Response strategy — manuscript revisions planned
+
+**Rejected approach:** Silently retain original findings without mentioning sensitivity failure. This would be scientifically dishonest and, if discovered by reviewers, would severely damage manuscript credibility.
+
+**Adopted approach — transparent reporting with cross-cohort emphasis:**
+
+1. **Discussion 4.3.2 (6th limitation):** Replace age paragraph with quantitative sensitivity results. Present collinearity diagnostics. State that cohort structure precludes definitive age-Braak disentanglement.
+
+2. **Discussion 4.2.2 (HIF-1/AMPK biology):** Soften from 'shared stress/hypoxia axis' claim to 'candidate metabolic-stress axis warranting orthogonal validation'. Acknowledge PFKFB3, SLC2A3 sign flip as evidence for age-associated component.
+
+3. **Discussion 4.1 (main findings):** Reframe validation cohorts as the primary evidence base for cross-cohort persistence — GSE125583 (n=289) and TCGA-GTEx (n=157 vs n=510) have independent age distributions and different confounding structures. DD signature dose-response in GSE125583 (Wilcoxon p=1.3×10⁻⁵) and logFC concordance in TCGA (Spearman ρ=0.713) provide the strongest evidence unlinked to Leng-specific collinearity.
+
+4. **Introduction / Title:** Consider softening title from 'reveals a shared stress/hypoxia axis' to more neutral phrasing pending final analytical decision.
+
+5. **Supplementary materials:**
+   - **Ek Tablo S2:** DD 20 gene comparison table (logFC_unadj, FDR_unadj, logFC_age, FDR_age, sign_concordant, persist_FDR05)
+   - **Ek Şekil S3:** Scatter plot age-unadjusted vs age-adjusted logFC for DD signature with sign flip annotation
+
+### Pre-registration integrity — preserved
+
+- Primary analysis (`~ 0 + braak_group + subcluster`) remains the pre-registered plan output
+- Reported main results retain original design
+- Sensitivity analysis explicitly labeled as post-hoc, motivated by external review
+- No retroactive modification of primary findings — sensitivity characterizes their robustness
+
+### Rationale for continued reporting of primary findings
+
+Despite sensitivity failure at the discovery cohort level:
+
+1. **Cross-cohort persistence:** DD signature demonstrates significant Braak dose-response in GSE125583 (n=289, independent bulk cohort with different age structure) — Wilcoxon p=1.3×10⁻⁵
+
+2. **Cross-disease persistence:** DD signature exhibits logFC rank concordance between AD (GSE125583 advanced vs control) and GBM (TCGA tumor vs GTEx normal cortex) — Spearman ρ=0.713
+
+3. **Independent confounding structures:** GSE125583 and TCGA-GTEx have different age distributions than Leng; if DD signature were purely age-driven, cross-cohort replication would not be expected
+
+4. **Biological interpretability:** 3-category framework (neuronal identity loss / stress-hypoxia / tumor-specific metabolic-proliferative) provides testable hypotheses regardless of Leng-specific attribution
+
+### Status update
+
+- 2026-09-24 18:00 — Documentation corrections completed (Deviation 1 ✓)
+- 2026-09-25 09:30 — Age sensitivity analysis executed (Deviation 2 ✓)
+- 2026-09-25 — Manuscript revisions in progress (Discussion 4.1, 4.2.2, 4.3.2 + Ek Tablo S2 + Ek Şekil S3)
+
+### Files affected (this deviation)
+
+- `outputs/age_sensitivity_results.rds` — intermediate results saved
+- `R/04_stage1_ad_signature.R` — to be extended with sensitivity function documentation
+- `manuscript/drafts/discussion.md` — sections 4.1, 4.2.2, 4.3.2 to be revised
+- Ek Tablo S2 + Ek Şekil S3 to be created 2026-09-25
+
+### Scientific reflection
+
+This finding is uncomfortable but scientifically valuable. Two key lessons:
+
+1. **Cohort demographic structure is a design constraint, not an analytical choice.** The Leng cohort's age-Braak collinearity was created by donor recruitment and cannot be resolved post-hoc. This is a general lesson for the field: single-cohort discovery designs with confounded demographics require independent cohort validation as the primary robustness test, not statistical adjustment.
+
+2. **Sensitivity analyses can reveal real limitations even when they don't align with narrative preferences.** The temptation to interpret the sensitivity failure as 'purely statistical artifact' is scientifically dishonest given the collinearity metrics. The correct posture is: report both interpretations, emphasize cross-cohort validation, and let readers evaluate.
+
+This manuscript's response to this finding will demonstrate — or fail to demonstrate — the pre-registration + DEVIATIONS discipline promised throughout the methods.
+
+
+---
+
+## 2026-09-27: Manuscript revisions COMPLETED
+
+Following the 2026-09-25 sensitivity analysis + validation source verification, the manuscript revisions planned in the 2026-09-25 DEVIATIONS section have been executed.
+
+### Files modified 2026-09-27
+
+- `manuscript/drafts/discussion.md` + `.docx`:
+  - **Section 4.3.2 (6th limitation):** Rewritten with concrete sensitivity results — Pearson r=0.797, condition number 951, 486→3 gene reduction (99.4%), category-specific sign concordance (neuronal 67%, stress 17%, divergent 88%). Framed as 'cohort structural limitation, not analytical choice'. Validation cohorts positioned as primary evidence base.
+  - **Section 4.2.2 (Shared stress/hypoxia axis):** Complete 4-paragraph rewrite. Discovery vs validation dichotomy made explicit ('discovery: both DOWN in vulnerable neurons/cellular states; validation: both UP in tissue-level bulk'). HIF-1/AMPK pathway claim softened from 'manuscript's most novel finding' to 'hypothesis-generating candidate axis' with explicit acknowledgment of nominal p-values (0.041, 0.049) not surviving BH correction. Sensitivity analysis 5/6 stress category sign flip openly reported and linked to Section 4.3.2. Validation cohort persistence (GSE125583 mean +0.42; TCGA-GBM/GTEx mean +1.17) framed as biological signal evidence independent of Leng-specific collinearity.
+  - Figure reference correction: 'Ek Şekil 4' → 'Figure 5, Figure 6' (validation cohort figures in Results 3.4).
+  - Total word count change: 2241 → 2834 (+593 words for transparent sensitivity reporting).
+
+- `outputs/EkTabloS2_DD_age_sensitivity.csv`: DD 20 gene comparison table with canonical 3-category assignments (6 neuronal / 6 stress / 8 divergent) and both primary + sensitivity contrast metrics.
+
+- `outputs/EkSekilS3_age_sensitivity_scatter.pdf` + `.png`: Publication-quality scatter plot showing age-unadjusted vs age-adjusted logFC for DD signature, colored by 3-category, with sign flip status marked. Diagonal reference line clarifies concordance visually.
+
+### Content NOT yet addressed (deferred)
+
+- `[VERIFY]` tags in Discussion 4.2.2 paragraph 3 (PFKFB3 in AD, HIF-1 in GBM, AMPK dual role literature) — requires literature verification session, deferred to next revision cycle.
+- Title reconsideration ('shared stress/hypoxia axis' phrasing) — pending final analytical decision by author.
+- ChatGPT/Kimi remaining moderate-priority critiques: Methods 2.4 permutation null model spec, Results 3.2 post-hoc DD 'exploratory' framing, H2 REJECTED ↔ DD tension paragraph.
+
+### Status of Deviation 2 (post-hoc age sensitivity)
+
+- 2026-09-24 22:55 — Documentation corrections completed (Deviation 1 ✓, commit 251c87f)
+- 2026-09-25 09:30 — Age sensitivity analysis executed (Deviation 2 ✓)
+- 2026-09-25 09:50 — Full analysis state saved to `outputs/sensitivity_analysis_full_state.rds`
+- **2026-09-27 — Discussion revisions completed integrating sensitivity results (Deviation 2 dokümantasyonu ✓ TAMAM)**
+
+### Manuscript posture — final assessment
+
+The manuscript now presents a **dual-layer honest scientific narrative:**
+
+1. **Discovery-level acknowledgment:** Leng cohort's near-singular design matrix (condition 951) precludes definitive age-Braak signal disentanglement. Stress/hypoxia category especially fragile at discovery level (5/6 sign flip under age adjustment).
+
+2. **Validation-level anchoring:** Cross-cohort persistence in GSE125583 (n=289) and TCGA-GBM/GTEx (n=157 vs 510) — cohorts with different age structures — provides evidence independent of Leng-specific collinearity. The 3-category framework is validation-based, not discovery-based.
+
+3. **Explicit uncertainty framing:** HIF-1/AMPK axis positioned as 'hypothesis-generating candidate' requiring functional validation, not 'novel mechanism established'. Nominal p-values transparently reported without BH survival.
+
+This posture is defensible under peer review: sensitivity failure at discovery is real but does not invalidate cross-cohort biological signal, and manuscript now shows author knows these boundaries and correctly anchors evidence to appropriate cohort levels.
+
