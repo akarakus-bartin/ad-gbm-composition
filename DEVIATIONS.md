@@ -919,3 +919,7 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - D9 BRETIGEA brainCells: nMarker = 50, human, cell types ast/end/mic/neu/oli/opc, scale = TRUE.
 - D10 limma lmFit + eBayes defaults; diagnosis coefficient.
 
+
+- D11 (added after cohort build, before any DE): 1 GBM sample with missing sex excluded from GBM models (152 tumour + 186 control). Cohort counts match plan Table 1 exactly (153 / 84 / 102).
+- D12: Diagnosis VIF in Model B will be reported; expected to be high in GBM (tumour vs normal composition). Reported, not used to alter the decision.
+
