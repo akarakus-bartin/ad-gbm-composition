@@ -832,3 +832,36 @@ The manuscript now presents a **dual-layer honest scientific narrative:**
 
 This posture is defensible under peer review: sensitivity failure at discovery is real but does not invalidate cross-cohort biological signal, and manuscript now shows author knows these boundaries and correctly anchors evidence to appropriate cohort levels.
 
+
+---
+
+## 2026-09-27 (late) — Plan conformance audit (facts only; no re-analysis yet)
+
+Triggered by today's analyses. Reference: Analysis_Plan_v1.docx (commit 3fcf8d1, unchanged since).
+
+### A. Corrections to earlier DEVIATIONS entries (2026-09-24/25/27)
+- FALSE statement: 'pre-registered plan did not include age'. Plan 6.1: 'Age and sex will be included as covariates.' DEVIATIONS 2026-09-21 Karar 2 also specifies `~ diagnosis + age` for Leng. The executed code (`~ 0 + braak_group + subcluster`) omitted age without documentation. The age-adjusted model is therefore the plan-conformant model, not a post-hoc sensitivity analysis.
+- FALSE statement: 'condition number 951, near-singular design'. Raw condition number is scale-inflated by unscaled age. Standardised condition number = 3; VIF(braak, age) = 2.74. The real limitation is zero age overlap (Braak 0: 50-71, Braak II: 72-91) + 7 donors, i.e. lack of common support, not numerical singularity.
+- Labelling: plan's Braak VI vs 0 is the pre-specified primary contrast; Braak II vs 0 is the documented deviation (2026-09-21 Karar 1). Current manuscript reverses these labels.
+
+### B. Newly identified issues
+1. Pseudoreplication in Stage 1: 21 pseudobulk samples from 7 donors, donor not modelled. Donor ICC = 0.346. Donor-aware inference: 27 DE genes (voom + duplicateCorrelation) / 0 (donor-summed edgeR) vs 486 originally. logFC r = 0.981 (effect directions preserved).
+2. Stage 3 with donor-aware AD ranks (top-200): DD overlap 16, BH p = 0.106 (was 20, 0.012); DU [H2a] overlap 22, BH p = 0.002, OR = 2.42 (< pre-specified 3). Threshold profile n = 100/200/300/500 recorded in outputs/sensitivity_analysis_full_state.rds.
+3. H2 decision unchanged: REJECTED under pre-specified rule. Note: plan requires RRHO2 significance at the concordant DU position; original RRHO2 max was at DD, so Test 1 likely also FAILS (0/3, not 1/3 as recorded 2026-09-21).
+4. Stage 1 signature threshold log2FC < -0.5 (plan 6.1) not applied.
+5. Results 3.2 reporting errors: 'OR = 1.93' is observed/expected enrichment, not odds ratio (Fisher OR = 2.15); 'BH-adjusted P = 3.1e-3' is the unadjusted p (BH over 4 quadrants = 0.012).
+6. H1 (PRIMARY hypothesis, Stage 4) was not tested. 2026-09-22 entry replaced it citing Synapse DUC; however BRETIGEA is reference-free and plan cohorts (GSE48350, GSE36980, TCGA, GTEx) are public. Plan section 9 rules 2 and 4 require the original analysis to be run and forbid hypothesis reformulation.
+7. Cohort discrepancies vs plan Table 1: GSE125583 not in plan; GTEx n = 510 cortex via recount3 (plan: 186, hippocampus + BA9, Xena TOIL); Neftel n = 28 in text (plan: 24); Leng 'n = 42' in Discussion 4.3.2 (actual: 10 donors).
+8. GSE125583 counts are recount3 base-pair coverage (median library 1.58e9); edgeR/NB-based analyses on these counts are inappropriate. limma-trend on log-CPM used for today's analyses.
+9. GSE125583 loading/preprocessing is not in any R/ script (reproducibility gap).
+10. Repository has no remote: the plan's 'public GitHub prior to analysis' commitment was not met. Timestamps are local and author-supplied.
+
+### C. Today's exploratory findings (valid, retained)
+- GSE125583: age-group r = 0.071; DD 20 genes 20/20 sign-stable under age + sex adjustment; stress genes 5/6 FDR < 0.05 UP after additional marker-based composition adjustment (neuron/astro/microglia scores; VIF <= 1.45). Neuronal and divergent categories largely composition-explained. Saved: outputs/EkTabloS4_GSE125583_age_sex_adjusted.csv.
+
+### D. Open work (not started)
+1. Plan-conformant Stage 1: Braak VI vs 0 primary (+ Braak II vs 0 as documented deviation), s1/s2/s4, age covariate, donor-aware inference, signature FDR < 0.05 & log2FC < -0.5.
+2. Stage 3 three pre-specified tests on the plan-conformant signature.
+3. Stage 4 / H1 with BRETIGEA (+ second method) on plan cohorts.
+4. Manuscript framing per plan section 12 after H1/H2 are locked. Manuscript text edited 2026-09-27 (Discussion 4.2.2, 4.3.2) is superseded pending this work.
+
