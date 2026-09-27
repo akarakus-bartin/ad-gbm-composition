@@ -935,3 +935,21 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - Interpretation notes (NOT pre-declared, exploratory): (a) collapse of shared DEGs is driven entirely by the AD side (0 DEGs after composition); with n=51 and 6 added covariates, part may be power loss (cf. GSE125583 n=195: ~48% of DEGs retained after marker-score adjustment). (b) In GBM, astrocyte markers behave inconsistently (AQP4 -0.22, GFAP -0.27, ETNPPL +0.87 loading) because malignant AC-like cells express them; marker-based deconvolution in tumour tissue is a structural limitation of H1 (anticipated in D12).
 - Next: method 2 (MuSiC, per 2026-09-20 deviation) requires a reference choice, to be pre-declared before execution.
 
+
+---
+
+## 2026-09-27 — Stage 4 method 2 (MuSiC) PRE-DECLARATION (before any MuSiC run)
+
+- D13 Reference: Allen Brain Map human primary motor cortex (M1) 10x snRNA-seq with class labels (plan specifies an Allen reference; plan citation Tasic 2018 appears to be mouse, to be verified and corrected).
+- D14 Collapse to 6 classes matching BRETIGEA: neu (glutamatergic + GABAergic), ast, mic, oli, opc, end; other classes excluded.
+- D15 Subsample <= 500 nuclei per class x donor, seed = PARAMS$seed.
+- D16 Bulk to linear scale: AD 2^expr (microarray; scale mismatch noted as limitation), GBM 2^expr - 0.001 floored at 0.
+- D17 music_prop defaults; proportions sum to 1, so class 'end' dropped from Model C covariates to avoid exact collinearity.
+- D18 Decision per plan 2.2 using ratio_B (0.000, recorded) and ratio_C.
+- D19 Fallback: if the Allen reference cannot be obtained/loaded before any MuSiC result is seen, Leng EC all-cell reference is used as a documented deviation.
+- Choice rationale: plan fidelity and method independence (Leng EC shares the Stage 1 source).
+
+
+- D20 (Allen metadata inspected, no expression read): Micro-PVM mapped to mic; neuron class sampled at random across subclasses (no subclass balancing). No cells flagged as outliers in metadata. Reference is neuron-enriched (non-neuronal 5.2%; end 64, mic 108 cells) — glial profiles noisier; reported as limitation.
+- D21: matrix.csv (7 GB) is stream-filtered during download to the selected cells (keep_ids.txt); full matrix not stored. Selection list and seed committed.
+
