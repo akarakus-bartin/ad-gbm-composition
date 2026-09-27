@@ -973,3 +973,16 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 2. Collapse is driven entirely by the AD side (n=51): AD DEGs 4449 -> 0 under both B and C; GBM DEGs essentially unchanged under C.
 3. Circularity: both covariate sets are derived from the analysed expression data; any data-derived covariates capturing the main disease axis may suppress DE regardless of composition. To be probed with a pre-declared exploratory negative control (random gene-set covariates).
 
+
+---
+
+## 2026-09-27 — EXPLORATORY negative control for H1 (pre-declared; does not enter H1 decision)
+
+- Arm 1 (power): Model A + 6 random N(0,1) covariates, 1000 iterations, both cohorts.
+- Arm 2 (data-derived covariates): Model A + PC1 scores of 6 random 50-gene sets drawn from all non-BRETIGEA-marker genes (DEGs not excluded), per cohort, 1000 iterations.
+- Primary metric: AD DEG retention = median AD DEG count (FDR<0.05) / 4449. Secondary: shared-DEG ratio vs Model A (1458), covariates added to both cohorts.
+- Composition capture (Arm 2, AD): per iteration, mean over the 6 BRETIGEA scores of R^2 from regression on the 6 random PCs; summarised by median over iterations.
+- Rules. Arm 1: retention >= 0.80 -> power loss does not explain the collapse; < 0.20 -> collapse largely power loss; otherwise partial.
+  Arm 2: if median composition R^2 < 0.25: retention < 0.20 -> H1 collapse NOT composition-specific; >= 0.80 -> composition-specific; otherwise partial. If median R^2 >= 0.25 -> Arm 2 non-discriminating (random genes also capture composition).
+- Seed PARAMS$seed. Script: R/07e_stage4_negative_control.R.
+
