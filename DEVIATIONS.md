@@ -953,3 +953,8 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - D20 (Allen metadata inspected, no expression read): Micro-PVM mapped to mic; neuron class sampled at random across subclasses (no subclass balancing). No cells flagged as outliers in metadata. Reference is neuron-enriched (non-neuronal 5.2%; end 64, mic 108 cells) — glial profiles noisier; reported as limitation.
 - D21: matrix.csv (7 GB) is stream-filtered during download to the selected cells (keep_ids.txt); full matrix not stored. Selection list and seed committed.
 
+
+- D22: MuSiC proportion columns with zero variance across samples are dropped from Model C and reported.
+- D23: MuSiC Est.prop.weighted (package default estimate) is used.
+- D24: Model D (A + BRETIGEA + MuSiC) computed as exploratory only (plan 6.4); Model A identical to 07b. Final H1 decision per plan 2.2 on ALL_fdr: SUPPORTED if ratio_B <= 0.20 AND ratio_C <= 0.20; REJECTED if either >= 0.50; otherwise INCONCLUSIVE.
+
