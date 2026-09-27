@@ -865,3 +865,14 @@ Triggered by today's analyses. Reference: Analysis_Plan_v1.docx (commit 3fcf8d1,
 3. Stage 4 / H1 with BRETIGEA (+ second method) on plan cohorts.
 4. Manuscript framing per plan section 12 after H1/H2 are locked. Manuscript text edited 2026-09-27 (Discussion 4.2.2, 4.3.2) is superseded pending this work.
 
+
+---
+
+## 2026-09-27 — Plan-conformant Stage 1: pre-declaration timing note
+
+- Analysis choices are fixed in the header of `R/04b_stage1_plan_conformant.R`.
+- The code was executed at 18:46 by pasting into the R console; the script file did not exist at that time.
+- The script file was written afterwards with identical code, and committed together with this note.
+- `outputs/stage1_plan_conformant.rds` was produced by that execution. No summary was printed or inspected before this commit.
+- Hence the declared choices were not informed by results, but this rests on the author's statement, not on commit order.
+
