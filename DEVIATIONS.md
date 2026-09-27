@@ -876,3 +876,28 @@ Triggered by today's analyses. Reference: Analysis_Plan_v1.docx (commit 3fcf8d1,
 - `outputs/stage1_plan_conformant.rds` was produced by that execution. No summary was printed or inspected before this commit.
 - Hence the declared choices were not informed by results, but this rests on the author's statement, not on commit order.
 
+
+---
+
+## 2026-09-27 — Plan-conformant Stage 1 + Stage 3 RESULTS (scripts 04b, 06b; pre-declared in e9da1dd, 144322d)
+
+### Stage 1 (donor-level edgeR QLF, ~ braak + age)
+- Braak VI vs 0 (plan primary): 3 vs 3 donors, residual df 3; FDR<0.05 = 0; plan signature (FDR<0.05 & log2FC<-0.5) = EMPTY.
+- Braak II vs 0 (documented deviation): 3 vs 4 donors, residual df 4; FDR<0.05 = 1; signature EMPTY.
+- Sensitivity voom+duplicateCorrelation: B6 336, B2 0 (ICC 0.41 / 0.30). Not used for decisions (pre-declared; dupcor with 6-7 donors may be anti-conservative for between-donor contrasts).
+- Spearman(plan B6 ranking, original ranking) = 0.584.
+
+### Stage 3 (only AD input changed; RRHO2 decision at DU quadrant per plan 6.3)
+- Reproduction with original ad_de: global RRHO2 max 6.54 @ (35,38) = DD, as originally recorded. DU max 4.21 (adj p 0.114).
+- CORRECTION: original H2 was 0/3 PASS under the plan (Test 1 passed only at DD position, which the plan does not accept), not 1/3.
+- Plan B6: DU 1.28, DD 2.06, all adj p = 1 (capped); Test 2 OR 1.40 FAIL; Test 3 p 0.157 FAIL -> H2 REJECTED (0/3).
+- Deviation B2: DU 3.37 (adj p 0.80), DD 1.67 (adj p = 1), UD 4.53 (adj p 0.054); Test 2 FAIL; Test 3 FAIL -> H2 REJECTED (0/3).
+- H2 is REJECTED under every analysis variant. Decision independent of DU/UD orientation assumption.
+
+### Consequence for exploratory DD finding
+- DD RRHO2 max drops from 6.54 (original: pseudoreplicated, no age) to 1.67 (same Braak II contrast, donor-level + age). The DD 'convergence axis' does not survive correction and must not be presented as a finding; at most as a cautionary note.
+- GSE125583 stress-gene result (Ek Tablo S4) remains valid as a bulk AD observation, but its selection rationale (DD membership) no longer holds.
+
+### Next
+- Stage 4 / H1 with BRETIGEA (+ second method) on plan cohorts. Manuscript scenario (plan section 12) to be chosen after H1 is locked.
+
