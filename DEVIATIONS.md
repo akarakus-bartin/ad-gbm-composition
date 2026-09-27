@@ -923,3 +923,15 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - D11 (added after cohort build, before any DE): 1 GBM sample with missing sex excluded from GBM models (152 tumour + 186 control). Cohort counts match plan Table 1 exactly (153 / 84 / 102).
 - D12: Diagnosis VIF in Model B will be reported; expected to be high in GBM (tumour vs normal composition). Reported, not used to alter the decision.
 
+
+---
+
+## 2026-09-27 — Stage 4 / H1 BRETIGEA RESULTS (07b; pre-declared D1-D12)
+
+- AD (n=51): DEG FDR<0.05 Model A 4449 -> Model B 0 (diagnosis VIF 2.2).
+- GBM (152 tumour + 186 control): Model A 14811 -> Model B 7787 (diagnosis VIF 13.4).
+- PRIMARY (ALL_fdr): shared A = 1458, B = 0, ratio_B = 0.000 -> per D7: DEFERRED (method 2 required). BRETIGEA alone meets the <= 0.20 support criterion.
+- Sensitivities (lfc thresholds; BA9-only; hippocampus-only controls): all ratio_B = 0.000.
+- Interpretation notes (NOT pre-declared, exploratory): (a) collapse of shared DEGs is driven entirely by the AD side (0 DEGs after composition); with n=51 and 6 added covariates, part may be power loss (cf. GSE125583 n=195: ~48% of DEGs retained after marker-score adjustment). (b) In GBM, astrocyte markers behave inconsistently (AQP4 -0.22, GFAP -0.27, ETNPPL +0.87 loading) because malignant AC-like cells express them; marker-based deconvolution in tumour tissue is a structural limitation of H1 (anticipated in D12).
+- Next: method 2 (MuSiC, per 2026-09-20 deviation) requires a reference choice, to be pre-declared before execution.
+
