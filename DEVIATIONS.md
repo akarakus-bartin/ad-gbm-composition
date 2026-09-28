@@ -1023,3 +1023,13 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - Adopted: 'Shared transcriptomic signatures of Alzheimer's disease and glioblastoma dissolve under cell-composition control: a pre-specified re-evaluation'.
 - Rationale: (1) length; (2) the H2 clause states absence of shared identity, which a 6-donor Stage 1 analysis cannot support (Discussion 4.3: 'no detectable overlap'). H1 finding and pre-specified design are retained in the title. Decision taken after results; documented here as a framing deviation, not an analytic one.
 
+
+---
+
+## 2026-09-28 — PRE-DECLARATION A1-A3 (responding to external review; before any result)
+
+- A1 (exploratory replication of H1): GSE125583 (Advanced AD vs Control, n=195) x TCGA/GTEx. AD Model A ~ diagnosis + sex + age; Model B + 6 BRETIGEA scores; limma-trend. GBM Models A/B unchanged. Primary metric shared-DEG ratio B/A. Labels: <=0.20 REPLICATES; >=0.50 DOES NOT REPLICATE; else PARTIAL. Secondary: AD-only retention; log2FC-threshold version. MuSiC not run (implausible proportions in main analysis). Script R/12a; cohort saved by R/12.
+- Known risk declared in advance: crude marker-score adjustment in GSE125583 retained ~48% of genome-wide DEGs (9313 -> 4514), so A1 may not replicate H1.
+- A2 (descriptive): 2x2 decomposition of the original DD signal (donor modelled yes/no x age yes/no), Braak II vs 0 fixed; RRHO2 DD/DU maxima with true boundaries and top-200 DD overlap per cell; all cells reported. Script R/12b.
+- A3 (sensitivity): GBM Stage 2 with limma-trend on log2(per-million-scaled summed TPM + 1), ~ tumour + group; Stage 3 re-run with plan B6 and deviation B2 AD inputs, true boundaries, same thresholds. Script R/12c.
+
