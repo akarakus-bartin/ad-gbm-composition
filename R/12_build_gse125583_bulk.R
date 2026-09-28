@@ -12,7 +12,14 @@ message("Age column used: ", age_col)
 age <- suppressWarnings(as.numeric(gsub("[^0-9.]", "", geo_clinical[[age_col]])))
 sex <- geo_clinical$geo_sex
 sel <- (advanced_ad | ctrl_samples) & !is.na(age) & !is.na(sex)
-E <- log_cpm[, sel]
+ids <- colnames(log_cpm)
+if (is.null(ids)) {
+  rn <- rownames(geo_clinical)
+  ids <- if (!is.null(rn) && !identical(rn, as.character(seq_len(nrow(geo_clinical))))) rn else sprintf("GSE125583_%03d", seq_len(ncol(log_cpm)))
+  message("log_cpm has no column names; using ", if (identical(ids, rn)) "rownames(geo_clinical)" else "positional IDs")
+}
+stopifnot(length(ids) == ncol(log_cpm), nrow(geo_clinical) == ncol(log_cpm))
+E <- log_cpm[, sel]; colnames(E) <- ids[sel]
 E <- E[rowMeans(E) > 1, ]
 sym <- gene_meta$gene_name[match(rownames(E), gene_meta$gene_id)]
 keep <- !is.na(sym); E <- E[keep, ]; sym <- sym[keep]
