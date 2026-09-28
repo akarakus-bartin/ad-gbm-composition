@@ -1,5 +1,5 @@
 # =============================================================================
-# 14_build_submission.R — assemble the Neurobiology of Aging submission package in one folder
+# 14_build_submission.R — assemble the journal submission package in one folder
 # Output: submission/NoA_<date>/  (numbered files in upload order) + MANIFEST.txt
 # Run:    source(here::here("R/14_build_submission.R"))
 # =============================================================================
@@ -53,7 +53,7 @@ if (file.exists(m)) {
 }
 
 status <- status[order(status$file), ]
-man <- c(sprintf("Neurobiology of Aging submission package — built %s", format(Sys.time(), "%Y-%m-%d %H:%M")),
+man <- c(sprintf("Submission package — built %s", format(Sys.time(), "%Y-%m-%d %H:%M")),
          sprintf("git HEAD: %s", paste(system2("git", c("-C", shQuote(proj), "rev-parse", "--short", "HEAD"), stdout = TRUE), collapse = "")),
          sprintf("Open [CHECK] fields in manuscript: %s", chk), "",
          sprintf("%-50s %-8s %s", "file", "md5", "source"))

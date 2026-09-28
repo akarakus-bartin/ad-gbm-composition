@@ -2,7 +2,7 @@
 
 Code, pre-specified analysis plan, deviation register and locked results for:
 
-> Karakuş A. *Alzheimer's disease–glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation.* Submitted to *Neurobiology of Aging*.
+> Karakuş A. *Alzheimer's disease–glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation.* Submitted for publication.
 
 Author: Ahmet Karakuş, Bartın University (akarakus@bartin.edu.tr)
 
