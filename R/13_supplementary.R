@@ -91,7 +91,7 @@ sheets <- list(S1a_shared_DEGs_primary = S1a, S1b_shared_DEGs_replication = S1b,
                S2_BRETIGEA_astro_markers = S4,
                S3a_RRHO2_quadrants = S2a, S3b_DD_decomposition = S2b, S3c_GBM_limma = S2c,
                S4_GSE125583_DD_genes = S3)
-if (requireNamespace("openxlsx", quietly = TRUE)) {
+if (FALSE && requireNamespace("openxlsx", quietly = TRUE)) {  # openxlsx wrote invalid dimension/drawing parts
   openxlsx::write.xlsx(sheets, file.path(out, "Supplementary_Tables_S1-S4.xlsx"), rowNames = FALSE)
   message("Saved Supplementary_Tables_S1-S4.xlsx")
 } else if (requireNamespace("writexl", quietly = TRUE)) {

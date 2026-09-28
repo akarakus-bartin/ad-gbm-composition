@@ -42,6 +42,8 @@ if (requireNamespace("rmarkdown", quietly = TRUE) && rmarkdown::pandoc_available
                   error = function(e) { message("pandoc error: ", conditionMessage(e)); FALSE })
 }
 status[nrow(status) + 1, ] <- list(basename(sf2), "DEVIATIONS.md (pandoc -> docx)", ok2)
+ann <- file.path(drafts, "supplementary_file2_NoA.docx")
+if (file.exists(ann)) { file.copy(ann, sf2, overwrite = TRUE); status[nrow(status), ] <- list(basename(sf2), "manuscript/drafts/supplementary_file2_NoA.docx (annotated guide)", TRUE) }
 
 # [CHECK] fields still open in the manuscript
 chk <- NA
