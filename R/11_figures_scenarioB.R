@@ -161,7 +161,7 @@ p3 <- ggplot(d3, aes(j, i, fill = v)) + geom_raster() +
 save_fig(p3, "Figure3_H2_RRHO2", 7.2, 3.0)
 
 # -----------------------------------------------------------------------------
-# FIGURE 4 — Exploratory: sensitivity of the DD signal to corrections
+# FIGURE 5 — Exploratory: sensitivity of the DD signal to corrections
 # -----------------------------------------------------------------------------
 pr <- st$pseudoreplication
 d4a <- data.frame(yontem = factor(c("Original\n(no donor)", "voom +\ndonor block", "Donor-\nsummed"),
@@ -204,10 +204,10 @@ p4d <- ggplot(d4d, aes(analiz, v)) + geom_col(width = 0.6, fill = col[["DD"]]) +
   labs(x = NULL, y = expression("Maximum " * -log[10](P)),
        title = "RRHO2 DD quadrant\n(dashed: adjusted P = 0.001)") + th
 
-save_fig((p4a | p4b) / (p4c | p4d) + plot_annotation(tag_levels = "A"), "Figure4_DD_sensitivity", 7.2, 6.4)
+save_fig((p4a | p4b) / (p4c | p4d) + plot_annotation(tag_levels = "A"), "Figure5_DD_sensitivity", 7.2, 6.4)
 
 # -----------------------------------------------------------------------------
-# FIGURE 5 — H1 negative control
+# FIGURE 4 — H1 negative control
 # -----------------------------------------------------------------------------
 it <- nc$iterations; nA <- ndeg(b4$models$AD_A)
 p5a <- ggplot(it, aes(arm1_ad)) + geom_histogram(bins = 40, fill = "#999999") +
@@ -223,6 +223,6 @@ p5c <- ggplot(it, aes(arm2_compR2)) + geom_histogram(bins = 40, fill = "#999999"
        title = paste0("Arm 2: composition captured\n(median ", dec(nc$median_compR2), ")")) + th
 save_fig((p5a | p5b | p5c) + plot_annotation(tag_levels = "A",
          caption = sprintf("Blue line: AD DEGs under Model A (%s). Dashed lines: pre-specified thresholds.", fmt(nA))),
-         "Figure5_negative_control", 7.2, 3.0)
+         "Figure4_negative_control", 7.2, 3.0)
 
 message("All figures: ", out)
