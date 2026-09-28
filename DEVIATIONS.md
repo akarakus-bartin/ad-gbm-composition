@@ -1059,3 +1059,6 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 
 - 2026-09-28: Disclosure of prior exploratory analysis. An earlier, unpublished exploratory analysis (github.com/akarakus-bartin/AD-GBM-deconvolution, May 2026) had already reported that 198 shared DEGs disappear under BRETIGEA adjustment in overlapping data (GSE48350, GSE36980, TCGA/GTEx). The analysis plan was written after it. H1 in the primary cohort is therefore a pre-specified re-test, not a test of an unknown outcome; the GSE125583 replication, H2, and the donor/age analyses are new. Manuscript (abstract, introduction, methods 2.1, discussion 4.1-4.2) and cover letter updated; earlier repository annotated and archived.
 
+
+- 2026-09-28: Disclosure of prior exploratory analysis. An earlier, unpublished exploratory analysis (github.com/akarakus-bartin/AD-GBM-deconvolution, May 2026) had already reported that 198 shared DEGs disappear under BRETIGEA adjustment in overlapping data (GSE48350, GSE36980, TCGA/GTEx). The analysis plan was written after it. H1 in the primary cohort is therefore a pre-specified re-test, not a test of an unknown outcome; the GSE125583 replication, H2, and the donor/age analyses are new. Manuscript (abstract, introduction, methods 2.1, discussion 4.1-4.2) and cover letter updated; earlier repository annotated and archived.
+
