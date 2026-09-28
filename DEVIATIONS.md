@@ -1033,3 +1033,14 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - A2 (descriptive): 2x2 decomposition of the original DD signal (donor modelled yes/no x age yes/no), Braak II vs 0 fixed; RRHO2 DD/DU maxima with true boundaries and top-200 DD overlap per cell; all cells reported. Script R/12b.
 - A3 (sensitivity): GBM Stage 2 with limma-trend on log2(per-million-scaled summed TPM + 1), ~ tumour + group; Stage 3 re-run with plan B6 and deviation B2 AD inputs, true boundaries, same thresholds. Script R/12c.
 
+
+---
+
+## 2026-09-28 — RESULTS A1-A3 (pre-declared earlier today)
+
+- A1: GSE125583 (Control 70, AD 125). AD DEGs A 9306 -> B 4242 (retention 0.456; VIF 1.4). Shared DEGs A 3912 -> B 288, ratio 0.074 -> REPLICATES; lfc version 1105 -> 3 (0.003) -> REPLICATES. Declared risk did not materialise.
+  Post hoc (not pre-declared): with AD retention 0.456 and GBM retention 0.526, a random subset would retain ~0.24; observed 0.074 -> shared genes are preferentially composition-associated.
+- A2: DD RRHO2 max / top-200 overlap (p): no donor+no age 6.54 / 20 (0.003); no donor+age 1.29 / 9 (0.72); donor+no age 7.25 / 21 (0.001); donor+age 1.48 / 8 (0.83).
+  CORRECTION of manuscript narrative: donor modelling alone does not remove the DD signal; adding age does. Pseudoreplication inflated DE counts (486 -> 0-27) but is not what produced the DD signal. Because age and Braak do not overlap in Leng, the DD signal cannot be identified as a Braak effect.
+- A3: GBM limma-trend vs edgeR logFC r = 0.879 (FDR<0.05: 1737 vs 1576). Stage 3: plan B6 DU 2.50 (adj p 1), OR 1.52, perm p 0.098 -> REJECTED; deviation B2 DU 3.37 (adj p 0.788), OR 1.40, perm p 0.157 -> REJECTED. H2 decision robust to GBM method.
+
