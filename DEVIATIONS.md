@@ -1014,3 +1014,12 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 - Original DD max 6.54 at (35,38) confirmed inside the true DD quadrant.
 - Manuscript updated: Results Table 4 and section 3.4 (1.67 -> 1.48); Methods 2.5 now states the boundary definition. Facts sheet script reads the corrected table.
 
+
+---
+
+## 2026-09-28 — Manuscript title (deviation from plan section 12.2)
+
+- Plan title (Scenario B): 'Reported transcriptomic convergence between Alzheimer's disease and glioblastoma dissolves under cell-composition control and does not reflect shared neural identity at single-cell resolution: a pre-specified re-evaluation'.
+- Adopted: 'Shared transcriptomic signatures of Alzheimer's disease and glioblastoma dissolve under cell-composition control: a pre-specified re-evaluation'.
+- Rationale: (1) length; (2) the H2 clause states absence of shared identity, which a 6-donor Stage 1 analysis cannot support (Discussion 4.3: 'no detectable overlap'). H1 finding and pre-specified design are retained in the title. Decision taken after results; documented here as a framing deviation, not an analytic one.
+
