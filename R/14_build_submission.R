@@ -10,6 +10,7 @@ fig <- file.path(proj, "outputs/figures_scenarioB"); sup <- file.path(proj, "out
 drafts <- file.path(proj, "manuscript/drafts")
 
 items <- list(
+  c("00_Cover_letter.docx",                       file.path(drafts, "cover_letter_NoA.docx")),
   c("01_Manuscript.docx",                          file.path(drafts, "manuscript_NoA.docx")),
   c("02_Highlights.docx",                          file.path(drafts, "highlights_NoA.docx")),
   c("03_Figure1.pdf",                              file.path(fig, "Figure1_study_design.pdf")),
@@ -18,7 +19,8 @@ items <- list(
   c("06_Figure4.pdf",                              file.path(fig, "Figure4_negative_control.pdf")),
   c("07_Figure5.pdf",                              file.path(fig, "Figure5_DD_sensitivity.pdf")),
   c("10_Supplementary_Tables_S1-S4.xlsx",          file.path(sup, "Supplementary_Tables_S1-S4.xlsx")),
-  c("11_Supplementary_Figure_S1.pdf",              file.path(sup, "FigureS1_H1_replication.pdf")))
+  c("11_Supplementary_Figure_S1.pdf",              file.path(sup, "FigureS1_H1_replication.pdf")),
+  c("12_Graphical_abstract.tiff",                 file.path(drafts, "graphical_abstract_NoA.tiff")))
 
 status <- data.frame(file = character(), source = character(), ok = logical(), stringsAsFactors = FALSE)
 for (it in items) {
@@ -62,7 +64,7 @@ for (i in seq_len(nrow(status))) {
 }
 man <- c(man, "", "Not produced by this script (to be prepared separately):",
          "  - Declaration of competing interest (.docx from Elsevier declarations tool) — required",
-         "  - Cover letter — recommended",
-         "  - Graphical abstract — optional")
+         
+         )
 writeLines(man, file.path(out, "MANIFEST.txt")); cat(man, sep = "\n")
 if (any(!status$ok)) message("\n!! Missing items above — see 'source' column.") else message("\nAll files present in: ", out)
