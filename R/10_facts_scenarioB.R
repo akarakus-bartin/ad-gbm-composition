@@ -1,16 +1,24 @@
 # 10_facts_scenarioB.R — single source of numbers for the Scenario B manuscript
+# 2026-09-28: Stage 3 RRHO2 quadrant values now read from outputs/stage3_quadrants_corrected.rds
+#             (true quadrant boundaries at the sign change; see DEVIATIONS).
 f <- function(p) readRDS(here::here(p))
 s1 <- f("outputs/stage1_plan_conformant.rds"); s3 <- f("outputs/stage3_plan_conformant.rds")
 b4 <- f("outputs/stage4_H1_bretigea.rds");     m4 <- f("outputs/stage4_H1_music.rds")
 nc <- f("outputs/stage4_negative_control.rds"); st <- f("outputs/sensitivity_analysis_full_state.rds")
+qc <- f("outputs/stage3_quadrants_corrected.rds")
 ad <- f("results/intermediate/ad_bulk.rds");   gb <- f("results/intermediate/gbm_bulk.rds")
 gm <- gb$meta[!is.na(gb$meta$sex) & gb$meta$sex != "", ]
 cap  <- function(p) signif(min(1, p), 3)
 ndeg <- function(mm, k) sum(mm[[k]]$tt$adj.P.Val < 0.05)
-t3 <- function(x, lab) sprintf(
-  "| %s | DU %.2f (adj p %s) | DD %.2f (adj p %s) | OR %.2f, Bonf p %s | emp p %.3f | **%s** |", lab,
-  x$test1$DU$max, cap(x$test1$DU$p_adj), x$test1$DD$max, cap(x$test1$DD$p_adj),
-  x$test2$OR, cap(x$test2$p_bonf), x$test3$p_empirical, x$decision_DU)
+qv <- function(prefix, quad) { r <- qc[startsWith(qc$analiz, prefix) & qc$ceyrek == quad, ]; stopifnot(nrow(r) == 1); r }
+t3 <- function(x, prefix, lab) {
+  du <- qv(prefix, "DU"); dd <- qv(prefix, "DD")
+  n_fail <- sum(c(du$p_adj >= 0.001, !x$test2$passed, !x$test3$passed))
+  dec <- if (n_fail == 0) "SUPPORTED" else if (n_fail == 1) "INCONCLUSIVE" else "REJECTED"
+  sprintf("| %s | DU %.2f (adj p %s) | DD %.2f (adj p %s) | OR %.2f, Bonf p %s | emp p %.3f | **%s (%d/3)** |", lab,
+          du$max, cap(du$p_adj), dd$max, cap(dd$p_adj), x$test2$OR, cap(x$test2$p_bonf),
+          x$test3$p_empirical, dec, 3 - n_fail)
+}
 tab <- function(v) paste(names(table(v)), table(v), sep = " ", collapse = ", ")
 sh <- m4$shared$ALL_fdr; dd <- st$validation_composition$dd_table; S <- dd$Category == "Stress"
 facts <- c(
@@ -27,11 +35,12 @@ sprintf("- DEG FDR<0,05 — AD: A %d, B %d, C %d | GBM: A %d, B %d, C %d",
 sprintf("- Paylaşılan DEG: A %d, B %d, C %d; oran_B %.3f, oran_C %.3f -> **%s**",
         sh$nA, sh$nB, sh$nC, sh$ratio_B, sh$ratio_C, sh$decision),
 sprintf("- Tanı VIF: AD_B %.1f, GBM_B %.1f", b4$models$AD_B$vif_diag, b4$models$GBM_B$vif_diag),
-"", "## H2 (ikincil; Stage 3) — plan karar kuralı",
+"", "## H2 (ikincil; Stage 3) — plan karar kuralı (düzeltilmiş çeyrek sınırlarıyla)",
 "| Analiz | Test 1 DU | Test 1 DD | Test 2 | Test 3 | Karar |", "|---|---|---|---|---|---|",
-t3(s3$reproduction_original, "Orijinal (psödo-replike, yaşsız, Braak II)"),
-t3(s3$plan_B6, "Plan: Braak VI vs 0, donör, yaş"),
-t3(s3$deviation_B2, "Sapma: Braak II vs 0, donör, yaş"),
+t3(s3$reproduction_original, "Original", "Orijinal (psödo-replike, yaşsız, Braak II)"),
+t3(s3$plan_B6, "Plan", "Plan: Braak VI vs 0, donör, yaş"),
+t3(s3$deviation_B2, "Deviation", "Sapma: Braak II vs 0, donör, yaş"),
+sprintf("- Çeyrek sınırları (satır/sütun): %s", paste(unique(paste0(sub(":.*| \\(.*", "", qc$analiz), " ", qc$sinir_satir, "/", qc$sinir_sutun)), collapse = "; ")),
 "", "## Stage 1",
 sprintf("- Braak VI vs 0: donör %s, artık df %d, FDR<0,05 = %d, imza = %d gen",
         paste(s1$primary_B6$donors, collapse = " vs "), s1$primary_B6$resid_df,
@@ -53,4 +62,3 @@ sprintf("- Yaş-grup r = %.3f; stres genleri yaş+cinsiyet+kompozisyon ayarlı: 
         sum(S & dd$logFC_comp > 0 & dd$FDR_comp < 0.05), sum(S)))
 writeLines(facts, here::here("manuscript/facts_scenarioB.md"))
 cat(facts, sep = "\n")
-

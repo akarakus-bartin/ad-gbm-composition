@@ -1,5 +1,5 @@
 # Olgu sayfası — Senaryo B (R/10_facts_scenarioB.R ile üretildi; elle düzenlemeyin)
-Üretim: 2026-09-28 08:42 | git HEAD: f2ad237
+Üretim: 2026-09-28 10:09 | git HEAD: 9ab4318
 
 ## H1 (birincil; Stage 4)
 - AD kohortu: n = 51 (AD 18, Control 33); bölge: hippocampus 51; veri seti: GSE36980 17, GSE48350 34
@@ -8,12 +8,13 @@
 - Paylaşılan DEG: A 1458, B 0, C 0; oran_B 0.000, oran_C 0.000 -> **SUPPORTED**
 - Tanı VIF: AD_B 2.2, GBM_B 13.4
 
-## H2 (ikincil; Stage 3) — plan karar kuralı
+## H2 (ikincil; Stage 3) — plan karar kuralı (düzeltilmiş çeyrek sınırlarıyla)
 | Analiz | Test 1 DU | Test 1 DD | Test 2 | Test 3 | Karar |
 |---|---|---|---|---|---|
-| Orijinal (psödo-replike, yaşsız, Braak II) | DU 4.21 (adj p 0.114) | DD 6.54 (adj p 0.000531) | OR 1.52, Bonf p 0.278 | emp p 0.098 | **REJECTED** |
-| Plan: Braak VI vs 0, donör, yaş | DU 1.28 (adj p 1) | DD 2.06 (adj p 1) | OR 1.40, Bonf p 0.458 | emp p 0.157 | **REJECTED** |
-| Sapma: Braak II vs 0, donör, yaş | DU 3.37 (adj p 0.796) | DD 1.67 (adj p 1) | OR 1.40, Bonf p 0.458 | emp p 0.157 | **REJECTED** |
+| Orijinal (psödo-replike, yaşsız, Braak II) | DU 4.21 (adj p 0.114) | DD 6.54 (adj p 0.000531) | OR 1.52, Bonf p 0.278 | emp p 0.098 | **REJECTED (0/3)** |
+| Plan: Braak VI vs 0, donör, yaş | DU 1.28 (adj p 1) | DD 2.06 (adj p 1) | OR 1.40, Bonf p 0.458 | emp p 0.157 | **REJECTED (0/3)** |
+| Sapma: Braak II vs 0, donör, yaş | DU 3.37 (adj p 0.796) | DD 1.48 (adj p 1) | OR 1.40, Bonf p 0.458 | emp p 0.157 | **REJECTED (0/3)** |
+- Çeyrek sınırları (satır/sütun): Original implementation 19-22/23-26; Deviation 18-21/23-26; Plan 19-22/23-26
 
 ## Stage 1
 - Braak VI vs 0: donör 3 vs 3, artık df 3, FDR<0,05 = 0, imza = 0 gen

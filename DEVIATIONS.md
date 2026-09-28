@@ -998,3 +998,19 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 
 ### Stage 4 closed. Locked results: H2 REJECTED (0/3, all variants); H1 SUPPORTED (ratio_B = ratio_C = 0). Plan section 12 -> Scenario B.
 
+
+- 2026-09-28 check: identical Test 2 statistics for plan B6 and deviation B2 (overlap 14, OR 1.40) are coincidental: AD top-200 sets share 30/200 genes and overlap sets differ. Top-200-by-logFC median logCPM 4.19 vs 4.57 overall (mild low-expression shift).
+
+- 2026-09-28 check: identical Test 2 statistics for plan B6 and deviation B2 (overlap 14, OR 1.40) are coincidental: AD top-200 sets share 30/200 genes and overlap sets differ. Top-200-by-logFC median logCPM 4.19 vs 4.57 overall (mild low-expression shift).
+
+---
+
+## 2026-09-28 — CORRECTION: RRHO2 quadrant boundaries in 06b (found during figure generation)
+
+- 06b pre-declared the DU quadrant as 'AD bottom half x GBM top half' (matrix midpoint). RRHO2 actually splits each list at the sign change of the ranking metric; these boundaries appear as NA bands in the hypermat (rows 18-22, columns 23-26 depending on analysis).
+- Recomputed with true boundaries (R/11_figures_scenarioB.R -> outputs/stage3_quadrants_corrected.rds).
+- DU maxima UNCHANGED in all three analyses: original 4.21 (adj p 0.114), deviation B2 3.37 (0.796), plan B6 1.28 (1). Test 1 FAILS in all; H2 remains REJECTED 0/3 in all variants.
+- Changed values: deviation B2 DD max 1.67 -> 1.48 (old value at (26,22) lay in the GBM-up half); original UU 2.44 -> 2.94 and UD 2.94 -> 0.47 (cell (10,22) was misassigned).
+- Original DD max 6.54 at (35,38) confirmed inside the true DD quadrant.
+- Manuscript updated: Results Table 4 and section 3.4 (1.67 -> 1.48); Methods 2.5 now states the boundary definition. Facts sheet script reads the corrected table.
+
