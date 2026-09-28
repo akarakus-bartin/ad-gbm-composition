@@ -1047,3 +1047,12 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 
 - 2026-09-28 (update): Title revised after external review to 'Alzheimer's disease-glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation'. Reason: in the replication cohort 288 of 3,912 shared DEGs remained, so 'do not survive' did not describe both cohorts. Abstract now reports both negative-control arms.
 
+
+- 2026-09-28: Target journal changed from plan list to Neurobiology of Aging (Elsevier, hybrid). Reasons: no institutional open-access agreement for Scientific Reports APC; Briefings in Bioinformatics does not label the article type as original research. Manuscript reformatted to NoA guide (author-date references, unstructured abstract <= 250 words, highlights, table notes, GenAI declaration).
+
+
+- 2026-09-28: Target journal changed from plan list to Neurobiology of Aging (Elsevier, hybrid). Reasons: no institutional open-access agreement for Scientific Reports APC; Briefings in Bioinformatics does not label the article type as original research. Manuscript reformatted to NoA guide (author-date references, unstructured abstract <= 250 words, highlights, table notes, GenAI declaration).
+
+
+- 2026-09-28 (supplementary build): (1) The 288 shared DEGs under Model B in GSE125583 are not a subset of the 3,912 under Model A: 138 remained shared, 150 became newly shared. Gene-level retention: shared 3.5%, AD DEGs 30.1% (2,800/9,306), GBM DEGs 45.4% (6,718/14,811). Pre-declared count ratio (0.074, REPLICATES) unchanged; manuscript retention statements corrected from count ratios to gene-level overlap (descriptive, not pre-declared). (2) BRETIGEA astrocyte-marker correlations in the text (AQP4 -0.22, GFAP -0.27, ETNPPL +0.87) could not be traced to a saved computation; replaced by values reproduced in R/13 (all samples: -0.19, -0.24, +0.88). Within tumours and within controls all three are positive.
+
