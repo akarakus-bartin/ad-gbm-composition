@@ -63,8 +63,6 @@ for (i in seq_len(nrow(status))) {
   man <- c(man, sprintf("%-50s %-8s %s", status$file[i], md5, status$source[i]))
 }
 man <- c(man, "", "Not produced by this script (to be prepared separately):",
-         "  - Declaration of competing interest (.docx from Elsevier declarations tool) — required",
-         
-         )
+         "  - Declaration of competing interest (.docx from Elsevier declarations tool) - required")
 writeLines(man, file.path(out, "MANIFEST.txt")); cat(man, sep = "\n")
 if (any(!status$ok)) message("\n!! Missing items above — see 'source' column.") else message("\nAll files present in: ", out)
