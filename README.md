@@ -1,160 +1,94 @@
-# AD-GBM Cell-Composition-Controlled Re-evaluation
+# AD–GBM transcriptomic overlap under cell-composition adjustment
 
-Analytical code accompanying the pre-specified analysis plan for the study:
-**"Cell-composition-controlled re-evaluation of transcriptomic convergence between Alzheimer's disease and glioblastoma multiforme: a hypothesis-driven bulk and single-cell integrative analysis"**
+Code, pre-specified analysis plan, deviation register and locked results for:
 
-Author: Ahmet Karakuş (Bartın University)
+> Karakuş A. *Alzheimer's disease–glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation.* Submitted to *Neurobiology of Aging*.
 
----
+Author: Ahmet Karakuş, Bartın University (akarakus@bartin.edu.tr)
 
-## What this repository is
+## What is here
 
-This repository implements the four-stage analytical pipeline pre-specified in `docs/Analysis_Plan_v1.docx` (**this file is the reference; do not modify the code in ways that deviate from it without logging the deviation in `DEVIATIONS.md`**).
+| Path | Content |
+|---|---|
+| `docs/Analysis_Plan_v1.docx` | Pre-specified analysis plan, first committed before any analysis (commit `3fcf8d1`, 20 September 2026) and never modified since |
+| `DEVIATIONS.md` | Dated register of every departure from the plan, including errors found in an audit of the original implementation |
+| `config/params.yml` | Pre-specified parameters and thresholds |
+| `R/` | Analysis scripts (see the map below) |
+| `outputs/` | Locked result files (`.rds`), figures, supplementary tables |
+| `manuscript/facts_scenarioB.md` | Every number in the manuscript, generated from the locked results by `R/10_facts_scenarioB.R` |
 
-## Repository structure
+## Script map
 
-```
-.
-├── README.md                    # this file
-├── DEVIATIONS.md                # log of any deviation from the analysis plan
-├── LICENSE
-├── .gitignore
-├── Dockerfile                   # reproducible R environment
-├── renv.lock                    # exact R package versions (created on first run)
-├── config/
-│   └── params.yml               # ALL parameters (edit here, not in scripts)
-├── R/
-│   ├── 00_setup.R               # loads packages, params, helpers
-│   ├── 01_download_data.R       # data acquisition (GEO + UCSC Xena)
-│   ├── 02_qc_bulk.R             # bulk QC + normalisation + ComBat
-│   ├── 03_qc_singlecell.R       # snRNA-seq + scRNA-seq QC
-│   ├── 04_stage1_ad_signature.R # Stage 1: AD-vulnerable neuron signature
-│   ├── 05_stage2_gbm_signature.R# Stage 2: GBM neural-mimicry signature
-│   ├── 06_stage3_convergence.R  # Stage 3: H2 tests
-│   ├── 07_stage4_bulk_reanalysis.R # Stage 4: H1 test
-│   ├── 08_sensitivity.R         # all sensitivity analyses (Section 8)
-│   └── 09_figures.R             # publication figures
-├── data/
-│   └── raw/                     # raw downloads (gitignored)
-├── results/
-│   ├── intermediate/            # analysis outputs (gitignored, Zenodo-deposited)
-│   └── logs/                    # per-stage logs and session info
-├── manuscript/
-│   └── figures/                 # publication-ready figures
-└── docs/
-    └── Analysis_Plan_v1.docx    # the pre-specified analysis plan
-```
+Scripts are numbered in the order they were written and run. The original implementation is kept, with its errors, so that the audit can be checked.
 
-## Prerequisites
+**Data preparation**
 
-- **R** ≥ 4.3 (tested with 4.4)
-- **Bioconductor** ≥ 3.18
-- ~ 50 GB disk space for raw data downloads
-- 32 GB RAM recommended for bulk analyses; 64 GB recommended for single-cell
+- `00_setup.R` packages, parameters, helpers
+- `01_download_data.R` public data from GEO and UCSC Xena
+- `02_qc_bulk.R` bulk QC, normalisation, ComBat (AD meta-cohort)
+- `03_qc_singlecell.R` snRNA-seq and scRNA-seq QC
 
-## Setup
+**Original implementation (superseded; see DEVIATIONS.md)**
 
-### Option 1: Docker (recommended for reproducibility)
+- `04_stage1_ad_signature.R`, `05_stage2_gbm_signature.R`, `06_stage3_convergence.R`, `07_stage4_bulk_reanalysis.R`, `08_sensitivity.R`, `09_figures.R`
+- An audit against the plan found that Stage 1 treated subclusters from the same donor as independent samples and omitted the planned age covariate, and that H1 had not been tested. These scripts are retained for transparency only.
 
-```bash
-docker build -t adgbm-analysis .
-docker run -it --rm -v $(pwd):/workspace adgbm-analysis
-```
+**Plan-conformant re-analysis (used for all hypothesis decisions)**
 
-Inside the container, R is preconfigured with all required packages.
+- `04b_stage1_plan_conformant.R` Stage 1, donor-level, with age
+- `06b_stage3_plan_conformant.R` Stage 3 (H2), three pre-specified tests
+- `07a_build_gbm_bulk_plan.R` GBM bulk cohort as specified in the plan
+- `07b_stage4_H1_bretigea.R` H1 with BRETIGEA composition covariates
+- `07c_allen_reference_subset.R` MuSiC reference selection (committed before the expression matrix was read)
+- `07d_stage4_H1_music.R` H1 with MuSiC composition covariates
+- `07e_stage4_negative_control.R` negative control for H1
 
-### Option 2: Local R with renv
+**Analyses added after external review (pre-declared before running)**
 
-```r
-install.packages("renv")
-renv::restore()   # installs exact versions from renv.lock
-```
+- `12_build_gse125583_bulk.R` saves the GSE125583 cohort (see limitation below)
+- `12a_H1_replication_gse125583.R` replication of H1 in an independent AD cohort
+- `12b_DD_decomposition.R` donor × age decomposition of the original convergence signal
+- `12c_GBM_limma_sensitivity.R` GBM limma-trend sensitivity analysis
 
-If `renv.lock` does not exist yet, initialise it:
+**Outputs**
 
-```r
-renv::init()
-# Then install packages listed in R/00_setup.R
-```
+- `10_facts_scenarioB.R` facts sheet; `11_figures_scenarioB.R` Figures 2–5; `13_supplementary.R` Tables S1–S4 and Figure S1; `14_build_submission.R` submission package
 
-## Running the pipeline
-
-Scripts are numbered in execution order. Run them one at a time and inspect outputs before proceeding:
-
-```r
-source("R/01_download_data.R")   # Weeks 1-2 (once, may take hours)
-source("R/02_qc_bulk.R")         # ~30 min
-source("R/03_qc_singlecell.R")   # ~1-2 hours (single-cell QC is slow)
-source("R/04_stage1_ad_signature.R")   # ~10 min
-source("R/05_stage2_gbm_signature.R")  # ~15 min
-source("R/06_stage3_convergence.R")    # ~5 min
-source("R/07_stage4_bulk_reanalysis.R")# ~30 min
-source("R/08_sensitivity.R")           # varies; several analyses are TODO stubs
-source("R/09_figures.R")               # ~5 min
-```
-
-Each stage saves intermediate objects to `results/intermediate/` as `.rds` files and produces a per-stage log at `results/logs/<stage>.log`.
+For every hypothesis test, the commit that fixed the analysis decisions precedes the commit that contains the results. The commit history should not be rewritten.
 
 ## Pre-specified decision rules
 
-The two primary hypotheses have decision thresholds defined in `config/params.yml`. **Do not modify these values without logging the change in `DEVIATIONS.md` with justification.**
+**H1 (Stage 4).** Supported if the number of shared DEGs under composition adjustment is at most 20% of the unadjusted number with both deconvolution methods; rejected if at least 50% with either method; inconclusive otherwise. *Implemented deviation:* MuSiC replaced the planned bMIND (package availability).
 
-### H1 (Stage 4)
+**H2 (Stage 3).** Test 1, RRHO2 at the DU position, adjusted P < 0.001 (*implemented deviation:* P multiplied by the number of pixels instead of BH, which is more conservative); Test 2, hypergeometric overlap of the top 200 genes, odds ratio ≥ 3 and Bonferroni P < 0.001; Test 3, permutation (1,000), empirical P < 0.01. Supported if all three pass, rejected if two or more fail, inconclusive if exactly one fails.
 
-- Supported if shared DEG count under cell-composition control ≤ 20% of uncorrected count in BOTH BRETIGEA and bMIND models
-- Rejected if ≥ 50% in either method
-- Inconclusive otherwise
+Outcome: H1 supported; H2 rejected in every analysis variant.
 
-### H2 (Stage 3)
+## Data
 
-Three tests must be evaluated:
+All input data are public; raw data are not redistributed here.
 
-- Test 1 (RRHO2): BH-adjusted P < 0.001 at concordant maximum
-- Test 2 (Hypergeometric top-200): odds ratio ≥ 3 AND Bonferroni P < 0.001
-- Test 3 (Permutation, 1000 replicates): empirical P < 0.01
+| Data | Accession / source | Use |
+|---|---|---|
+| Leng et al. (2021) snRNA-seq | GEO GSE147528 | Stage 1 |
+| Neftel et al. (2019) scRNA-seq | GEO GSE131928 (Smart-seq2) | Stage 2 |
+| AD microarrays | GEO GSE48350, GSE36980 | H1, primary AD cohort |
+| TCGA-GBM and GTEx brain | UCSC Xena, TOIL recompute | H1, GBM cohort |
+| Human M1 snRNA-seq (Bakken et al., 2021) | Allen Brain Map | MuSiC reference |
+| Fusiform cortex RNA-seq | GEO GSE125583, via recount3 | H1 replication (exploratory) |
 
-Composite: SUPPORTED if all 3 pass; REJECTED if ≥ 2 fail; INCONCLUSIVE if exactly 1 fails.
+`results/intermediate/` contains the five processed cohort objects read by the figure, facts-sheet and supplementary scripts (`ad_bulk.rds`, `gbm_bulk.rds`, `gse125583_bulk.rds`, `leng_deg_primary.rds`, `neftel_deg_primary.rds`; about 49 MB). Larger upstream objects, such as `leng_processed.rds` (93 MB), are not included and are regenerated from the public data by the data-preparation scripts.
 
-## What is a "deviation"
+## Software
 
-Any of the following requires an entry in `DEVIATIONS.md`:
+R 4.6.0 with edgeR 4.10.3, limma 3.68.2, sva 3.60.0, BRETIGEA 1.0.4, MuSiC 1.0.0 and RRHO2 1.0; random seed 20260101. A `Dockerfile` from the planning stage is included but has not been re-tested against these versions.
 
-- Changing any value in `config/params.yml`
-- Skipping a step or filter defined in the plan
-- Adding an analysis not described in the plan (unless labelled "exploratory" in the manuscript)
-- Using different software versions than those recorded in `renv.lock`
+## Known limitations of this repository
 
-## Data sources and expected file structures
-
-| Source | Accession | Where to find | Notes |
-|---|---|---|---|
-| Leng snRNA-seq | GSE147528 | GEO or Broad Single Cell Portal (SCP1198) | Get from SCP for clean cell annotations |
-| Neftel scRNA-seq | GSE131928 | GEO or Broad Single Cell Portal (SCP503) | Get from SCP for pre-computed state assignments |
-| AD microarray 1 | GSE48350 | GEO | Raw CEL files |
-| AD microarray 2 | GSE36980 | GEO | Raw CEL files |
-| TCGA-GBM | via UCSC Xena TOIL | https://xenabrowser.net | Manual download recommended (large files) |
-| GTEx brain | via UCSC Xena TOIL | https://xenabrowser.net | Filter to hippocampus + frontal cortex BA9 |
-| Allen M1 reference | Allen Brain Atlas | https://portal.brain-map.org/atlases-and-data/rnaseq | Required for bMIND |
-
-## Known TODOs in the code
-
-The code contains explicit `TODO:` markers where local judgment or dataset-specific adaptation is required:
-
-- Metadata parsing for GSE48350 and GSE36980 (column names vary by GEO submission)
-- Neftel cellular state column name (differs between GEO and SCP versions)
-- bMIND Allen reference preparation (multi-step, dataset-specific)
-- CIBERSORTx triangulation in sensitivity analysis (external service)
-
-These are expected and normal for real-data analysis; they are marked so they are not overlooked.
-
-## Timestamping
-
-Per the analysis plan (Section 10.5), the timestamp of the first commit of this repository containing `docs/Analysis_Plan_v1.docx` serves as the pre-specification timestamp. Do not squash or rewrite commit history.
-
-## Contact
-
-Ahmet Karakuş — akarakus@bartin.edu.tr
+- The download and log-CPM steps for GSE125583 are not yet scripted; `12_build_gse125583_bulk.R` saves the cohort from objects created interactively. The saved cohort is included in `results/intermediate/`.
+- The analysis plan was committed before analysis, but the repository was made public only at submission. Commit timestamps were generated locally and are not independently verified.
 
 ## License
 
-See `LICENSE`.
+Code: see `LICENSE`. Please cite the article if you use this material.
+

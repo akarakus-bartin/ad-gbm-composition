@@ -1,0 +1,22 @@
+{
+  "title": "AD–GBM transcriptomic overlap under cell-composition adjustment: code, pre-specified analysis plan and deviation register",
+  "upload_type": "software",
+  "description": "Analysis code, pre-specified analysis plan (commit 3fcf8d1), dated deviation register and locked results for the manuscript 'Alzheimer's disease–glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation'.",
+  "creators": [
+    {
+      "name": "Karakuş, Ahmet",
+      "affiliation": "Bartın University",
+      "orcid": "0000-0003-1458-808X"
+    }
+  ],
+  "keywords": [
+    "Alzheimer's disease",
+    "glioblastoma",
+    "transcriptomics",
+    "deconvolution",
+    "pseudoreplication",
+    "preregistration"
+  ],
+  "access_right": "open",
+  "license": "MIT"
+}

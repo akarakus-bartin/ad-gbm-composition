@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this material, please cite the associated article."
+title: "AD–GBM transcriptomic overlap under cell-composition adjustment: code, pre-specified analysis plan and deviation register"
+authors:
+  - family-names: Karakuş
+    given-names: Ahmet
+    affiliation: Bartın University
+    orcid: https://orcid.org/0000-0003-1458-808X
+license: MIT
