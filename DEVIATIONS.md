@@ -1044,3 +1044,6 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
   CORRECTION of manuscript narrative: donor modelling alone does not remove the DD signal; adding age does. Pseudoreplication inflated DE counts (486 -> 0-27) but is not what produced the DD signal. Because age and Braak do not overlap in Leng, the DD signal cannot be identified as a Braak effect.
 - A3: GBM limma-trend vs edgeR logFC r = 0.879 (FDR<0.05: 1737 vs 1576). Stage 3: plan B6 DU 2.50 (adj p 1), OR 1.52, perm p 0.098 -> REJECTED; deviation B2 DU 3.37 (adj p 0.788), OR 1.40, perm p 0.157 -> REJECTED. H2 decision robust to GBM method.
 
+
+- 2026-09-28 (update): Title revised after external review to 'Alzheimer's disease-glioblastoma transcriptomic overlap is markedly reduced after adjustment for estimated cell composition: a pre-specified re-evaluation'. Reason: in the replication cohort 288 of 3,912 shared DEGs remained, so 'do not survive' did not describe both cohorts. Abstract now reports both negative-control arms.
+
