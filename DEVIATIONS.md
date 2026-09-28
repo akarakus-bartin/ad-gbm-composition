@@ -1062,3 +1062,13 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 
 - 2026-09-28: Disclosure of prior exploratory analysis. An earlier, unpublished exploratory analysis (github.com/akarakus-bartin/AD-GBM-deconvolution, May 2026) had already reported that 198 shared DEGs disappear under BRETIGEA adjustment in overlapping data (GSE48350, GSE36980, TCGA/GTEx). The analysis plan was written after it. H1 in the primary cohort is therefore a pre-specified re-test, not a test of an unknown outcome; the GSE125583 replication, H2, and the donor/age analyses are new. Manuscript (abstract, introduction, methods 2.1, discussion 4.1-4.2) and cover letter updated; earlier repository annotated and archived.
 
+
+---
+
+## 2026-09-28 — ERROR FOUND: GSE125583 covariates misaligned; correction pre-declared before re-running
+
+- R/12_0 rebuilt the GSE125583 cohort from recount3 + GEO, matching samples by SRX accession. Expression reproduced exactly (logCPM from coverage, edgeR prior.count = 3; max |diff| = 0). Diagnosis matched for 195/195 samples.
+- Age matched for only 95/195 samples and sex for 137/195: the original session attached GEO age and sex to the expression matrix by position, and the two tables were not in the same order. All GSE125583 analyses adjusting for age or sex therefore used largely scrambled covariates: the H1 replication (A1), the stress-gene analysis (Results 3.6) and the reported age balance (r = 0.071, Wilcoxon P = 0.373), which is invalid.
+- Also documented: 'advanced AD' = AD diagnosis with Braak V-VI (n = 125); controls (n = 70) are Braak I-IV (I 3, II 10, III 26, IV 31).
+- Correction (declared before re-running): results/intermediate/gse125583_bulk.rds replaced by the SRX-matched cohort; old object kept as gse125583_bulk_misaligned.rds and old A1 result as A1_H1_replication_gse125583_misaligned.rds. A1 re-run with R/12a unchanged (same models, thresholds and labels). Section 3.6 re-run with R/12e: same models M0-M2, but the unrecorded marker scores are replaced by BRETIGEA neuron, astrocyte and microglia scores. Supplementary tables regenerated with R/13. All GSE125583 numbers in the manuscript will be replaced, whatever the outcome.
+

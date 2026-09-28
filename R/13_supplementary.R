@@ -70,7 +70,7 @@ S2c <- do.call(rbind, lapply(names(c(plan_B6 = 1, deviation_B2 = 1)), function(k
 }))
 
 # ---- Table S4: GSE125583 DD-signature and stress genes (existing exploratory table) ----
-S3 <- read.csv(here::here("outputs/EkTabloS4_GSE125583_age_sex_adjusted.csv"), check.names = FALSE)
+S3 <- read.csv(here::here("outputs/A4_GSE125583_DD_genes_corrected.csv"), check.names = FALSE)
 
 # ---- Table S2: BRETIGEA astrocyte markers in the GBM cohort ---------------------------
 mk  <- BRETIGEA::markers_df_human_brain

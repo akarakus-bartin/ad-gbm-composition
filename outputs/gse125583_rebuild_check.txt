@@ -1,0 +1,27 @@
+Saved cohort: 17211 genes x 195 samples; Control 70, AD 125
+recount3 SRP181886: 63856 genes x 289 samples (annotation gencode_v26)
+Matched recount3 samples to GEO by SRX: 289/289
+  age:ch1: 86=21; 91=21; 82=20; 85=18; 87=16; 88=14
+  braak.score:ch1: IV=99; V=65; VI=60; III=44; II=15; I=4
+  case id:ch1: 00-01=1; 00-12=1; 00-14=1; 00-17=1; 00-28=1; 00-30=1
+  diagnosis:ch1: Alzheimer's disease=219; control=70
+  Sex:ch1: M=158; F=130; NA=1
+  tissue:ch1: fusiform gyrus=289
+Columns used: diagnosis = diagnosis:ch1; age = age:ch1; sex = Sex:ch1
+Advanced AD = AD diagnosis and Braak V-VI. Braak in selected AD: V=65; VI=60
+Braak in selected controls: I=3; II=10; III=26; IV=31
+Selected: AD 125, Control 70 (saved: AD 125, Control 70)
+  logCPM_coverage      genes 17207 (common 17207 of 17211); samples 1:1 TRUE; min r 0.999681; max |diff| 0.585
+  logCPM_coverage_TMM  genes 17147 (common 17147 of 17211); samples 1:1 TRUE; min r 0.997982; max |diff| 1.37
+  logCPM_reads         genes 17354 (common 17211 of 17211); samples 1:1 TRUE; min r 0.973517; max |diff| 4.87
+  logCPM_cov_prior0.25 genes 17202 (common 17202 of 17211); samples 1:1 TRUE; min r 0.989789; max |diff| 3.58
+  logCPM_cov_prior0.5  genes 17203 (common 17203 of 17211); samples 1:1 TRUE; min r 0.994360; max |diff| 2.58
+  logCPM_cov_prior1    genes 17205 (common 17205 of 17211); samples 1:1 TRUE; min r 0.997767; max |diff| 1.58
+  logCPM_cov_prior3    genes 17211 (common 17211 of 17211); samples 1:1 TRUE; min r 1.000000; max |diff| 0
+  logCPM_cov_prior4    genes 17215 (common 17211 of 17211); samples 1:1 TRUE; min r 0.999832; max |diff| 0.415
+  logCPM_cov_prior5    genes 17216 (common 17211 of 17211); samples 1:1 TRUE; min r 0.999463; max |diff| 0.737
+  log2_cpm_plus1       genes 19880 (common 17211 of 17211); samples 1:1 TRUE; min r 0.892364; max |diff| 9.14
+  log2_cpm_plus0.5     genes 18373 (common 17211 of 17211); samples 1:1 TRUE; min r 0.918960; max |diff| 8.14
+Closest candidate: logCPM_cov_prior3
+Model A (A1): DEGs saved 9306, rebuilt 8314; log2FC r = 0.992914
+VERDICT: IDENTICAL
