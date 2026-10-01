@@ -1075,3 +1075,13 @@ Context: 07_stage4_bulk_reanalysis.R was never completed (gbm_bulk never built; 
 
 - 2026-09-28 (results of the correction): A1 with SRX-matched covariates: AD DEGs 8314 -> 4457 (VIF 1.38); shared 3435 -> 282, ratio 0.082 -> REPLICATES; lfc 935 -> 2 (0.002) -> REPLICATES. Gene level: 128/3435 (3.7%) still shared, 154 newly shared; AD retention 31.1%; GBM 45.4%. Age not balanced: median control 87, AD 84; r = -0.27; Wilcoxon P = 4.7e-4. Section 3.6 (R/12e): stress genes 6/6 up, 4/6 FDR < 0.05 after composition adjustment (was 5/6); genome-wide DEGs 8314 -> 3627. Manuscript, highlights, cover letter and graphical abstract updated; all GSE125583 numbers replaced.
 
+
+---
+
+## 2026-09-29 — Desk rejection by Neurobiology of Aging; revisions before resubmission
+
+- Editor: scope (aging relevance); 'pre-specified' framing overstated (plan committed nine days before submission, many deviations); role of AI unclear; heterogeneity of cohorts (region, contrast) not discussed.
+- Revisions: title subtitle removed; abstract and Methods 2.1 describe a documented analysis plan, not a preregistration; new Methods 2.9 on roles of the author and AI tools; Table 1 now lists region and comparison for every cohort; heterogeneity paragraph added to Limitations; keywords: Preregistration -> Reproducibility.
+- Found while checking sample counts: the plan's age >= 65 criterion (specified for GSE48350) was also applied to GSE36980 in R/02, excluding one control aged 55 (GSM907865). GSE36980 hippocampus therefore 17 of 18 samples, including GSM4764672 (AD_HI rep8, added to GEO after the original publication). Documented as a deviation; no re-analysis (data-preparation criterion, applied before any analysis).
+- Meta-cohort Braak: GSE48350 AD all Braak V-VI (n = 10); controls (n = 33) have no Braak stage recorded.
+
